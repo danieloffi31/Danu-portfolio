@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" role="img" aria-label="A boy and a girl sit on two hills under the same moon, joined by a trail of small hearts and a heartbeat line">
+  <defs>
+    <linearGradient id="nightb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b1d5a"/><stop offset="1" stop-color="#0f1733"/></linearGradient>
+  </defs>
+  <rect width="400" height="500" fill="url(#nightb)"/>
+  <g fill="#fff"><circle cx="40" cy="50" r="2"/><circle cx="110" cy="26" r="1.6"/><circle cx="300" cy="40" r="2"/><circle cx="360" cy="120" r="1.6"/><circle cx="70" cy="150" r="1.5"/><circle cx="330" cy="200" r="2"/><circle cx="24" cy="230" r="1.6"/></g>
+  <circle cx="200" cy="110" r="84" fill="#ffe27a" opacity=".18"/>
+  <circle cx="200" cy="110" r="52" fill="#ffe27a"/>
+  <circle cx="186" cy="104" r="4" fill="#b07a00"/><circle cx="214" cy="104" r="4" fill="#b07a00"/>
+  <path d="M188 120 q12 9 24 0" fill="none" stroke="#b07a00" stroke-width="3" stroke-linecap="round"/>
+  <path d="M0 360 Q90 280 170 360 L170 500 L0 500 Z" fill="#2f6f5e"/>
+  <path d="M230 360 Q310 280 400 350 L400 500 L230 500 Z" fill="#3d8b72"/>
+  <path d="M120 262 Q200 206 282 258" fill="none" stroke="#ff8fb1" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round"/>
+  <path transform="translate(150 236) scale(.7)" d="M0 10 C-14 -2 -12 -14 0 -6 C12 -14 14 -2 0 10 Z" fill="#ff5d8f"/>
+  <path transform="translate(200 206) scale(.9)" d="M0 10 C-14 -2 -12 -14 0 -6 C12 -14 14 -2 0 10 Z" fill="#ff5d8f"/>
+  <path transform="translate(248 232) scale(.7)" d="M0 10 C-14 -2 -12 -14 0 -6 C12 -14 14 -2 0 10 Z" fill="#ff5d8f"/>
+  <path d="M96 318 Q120 300 128 326" fill="none" stroke="#c98b5b" stroke-width="8" stroke-linecap="round"/>
+  <path d="M128 330 Q132 290 140 250" fill="none" stroke="#7a7a8a" stroke-width="1.6"/>
+  <circle cx="140" cy="242" r="16" fill="#ff5d8f"/>
+  <path d="M136 232 q-4 2 -5 7" fill="none" stroke="#ffd0de" stroke-width="2.4" stroke-linecap="round"/>
+  <rect x="80" y="318" width="30" height="44" rx="12" fill="#4aa3ff"/>
+  <circle cx="95" cy="300" r="20" fill="#c98b5b"/>
+  <path d="M77 296 C75 280 115 280 113 296 C108 288 82 288 77 296 Z" fill="#2a1a12"/>
+  <circle cx="89" cy="302" r="2.4" fill="#2a1a12"/><circle cx="101" cy="302" r="2.4" fill="#2a1a12"/>
+  <path d="M90 311 q5 4 10 0" fill="none" stroke="#6b2e1f" stroke-width="2" stroke-linecap="round"/>
+  <path d="M84 362 L76 384 M106 362 L114 384" stroke="#2a3f5c" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="285" cy="292" r="8" fill="#3b2418"/><circle cx="325" cy="292" r="8" fill="#3b2418"/>
+  <path d="M290 340 L320 340 L330 382 L280 382 Z" fill="#ffd166"/>
+  <circle cx="305" cy="300" r="20" fill="#f2c29b"/>
+  <path d="M285 298 C283 280 327 280 325 298 C318 288 292 288 285 298 Z" fill="#3b2418"/>
+  <circle cx="299" cy="304" r="2.4" fill="#2a1a12"/><circle cx="311" cy="304" r="2.4" fill="#2a1a12"/>
+  <path d="M300 313 q5 4 10 0" fill="none" stroke="#8a3b2a" stroke-width="2" stroke-linecap="round"/>
+  <path d="M296 382 L292 400 M314 382 L318 400" stroke="#8a3b2a" stroke-width="6" stroke-linecap="round"/>
+  <path d="M318 344 Q340 330 336 318" fill="none" stroke="#f2c29b" stroke-width="7" stroke-linecap="round"/>
+  <polyline points="20,470 110,470 130,440 150,490 170,455 190,470 380,470" fill="none" stroke="#ff5d8f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="200" cy="395" r="0"/>
+</svg>

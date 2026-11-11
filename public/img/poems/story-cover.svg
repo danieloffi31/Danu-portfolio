@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" role="img" aria-label="A small lit house under a big moon, with a dog at the door and a swirl of dream above the roof">
+  <defs>
+    <linearGradient id="dusk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d0b1e"/><stop offset="1" stop-color="#2a1a4a"/></linearGradient>
+  </defs>
+  <rect width="400" height="500" fill="url(#dusk)"/>
+  <g fill="#fff"><circle cx="40" cy="50" r="2"/><circle cx="120" cy="24" r="1.6"/><circle cx="180" cy="90" r="2"/><circle cx="350" cy="30" r="1.6"/><circle cx="30" cy="180" r="1.8"/><circle cx="370" cy="200" r="2"/><circle cx="200" cy="170" r="1.4"/></g>
+  <circle cx="290" cy="120" r="62" fill="#fff1c1" opacity=".18"/>
+  <circle cx="290" cy="120" r="44" fill="#fff1c1"/>
+  <path d="M155 200 c20 -20 50 -10 40 14 c-8 18 -36 12 -30 -6" fill="none" stroke="#c9a7ff" stroke-width="3" stroke-linecap="round" opacity=".85"/>
+  <path d="M120 180 c12 -10 30 -4 24 9" fill="none" stroke="#c9a7ff" stroke-width="2" stroke-linecap="round" opacity=".5"/>
+  <path d="M70 300 L155 230 L240 300 Z" fill="#5a3f7a"/>
+  <rect x="80" y="300" width="150" height="110" fill="#3d2f5c"/>
+  <rect x="110" y="330" width="36" height="36" fill="#ffd166"/>
+  <path d="M128 330 V366 M110 348 H146" stroke="#3d2f5c" stroke-width="3"/>
+  <rect x="170" y="350" width="30" height="60" rx="3" fill="#2a1f3d"/>
+  <circle cx="194" cy="382" r="2" fill="#ffd166"/>
+  <rect x="200" y="250" width="14" height="30" fill="#4a3a6a"/>
+  <g fill="#d9a86c">
+    <ellipse cx="256" cy="402" rx="16" ry="10"/>
+    <circle cx="272" cy="392" r="9"/>
+    <ellipse cx="268" cy="384" rx="4" ry="7" transform="rotate(-20 268 384)"/>
+    <path d="M240 398 Q232 388 236 382" fill="none" stroke="#d9a86c" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <circle cx="276" cy="390" r="1.6" fill="#2a1a12"/>
+  <path d="M278 396 q3 2 5 -1" fill="none" stroke="#2a1a12" stroke-width="1.4" stroke-linecap="round"/>
+  <path d="M258 412 L256 424 M268 412 L270 424" stroke="#b07a4a" stroke-width="4" stroke-linecap="round"/>
+  <rect x="0" y="410" width="400" height="90" fill="#1d1638"/>
+  <path d="M0 410 Q200 392 400 410" fill="none" stroke="#3d2f5c" stroke-width="3"/>
+</svg>
