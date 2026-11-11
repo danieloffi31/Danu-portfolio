@@ -1,0 +1,728 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="robots" content="noindex, nofollow">
+<title>E Daniel Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600&display=swap">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="wrap">
+
+<section class="login" id="gate" hidden aria-labelledby="gateH">
+  <div class="brand"><span class="brand-mark">ED</span><div><small>Owner only</small></div></div>
+  <h1 id="gateH">Admin sign-in</h1>
+  <p class="sub" id="gateSub">Only Danu Sir can open this page. Sign in with the admin password you set in Netlify.</p>
+  <form id="loginForm" class="login" style="margin:0" novalidate>
+    <label class="field">Password<input id="pw" type="password" autocomplete="current-password" required></label>
+    <button class="btn primary" type="submit" id="loginBtn">Sign in</button>
+    <p class="msg" id="loginMsg" role="status" aria-live="polite"></p>
+  </form>
+  <p class="sub"><a href="../">Back to the website</a></p>
+</section>
+
+<div id="desk" hidden>
+  <header class="top">
+    <div class="top-row">
+      <div class="brand"><span class="brand-mark">ED</span><div><h1>Studio desk</h1><small>E Daniel · admin</small></div></div>
+      <div class="top-links">
+        <a class="btn sm" href="editor.html">Editor</a>
+        <a class="btn sm" href="../" id="siteLink">Website</a>
+        <button class="btn sm ghost" id="outBtn" type="button">Sign out</button>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Admin sections" id="tabs">
+      <button class="tab" role="tab" data-tab="overview" aria-selected="true">Overview</button>
+      <button class="tab" role="tab" data-tab="visitors" aria-selected="false">Visitors</button>
+      <button class="tab" role="tab" data-tab="people" aria-selected="false">People<span class="n" id="newL" hidden>0</span></button>
+      <button class="tab" role="tab" data-tab="audience" aria-selected="false">Audience</button>
+      <button class="tab" role="tab" data-tab="network" aria-selected="false">Network</button>
+      <button class="tab" role="tab" data-tab="pets" aria-selected="false">Pets &amp; robot</button>
+      <button class="tab" role="tab" data-tab="money" aria-selected="false">Money</button>
+      <button class="tab" role="tab" data-tab="pledges" aria-selected="false">Children’s help<span class="n" id="newN" hidden>0</span></button>
+    </nav>
+  </header>
+
+  <main>
+    <div class="banner" id="demoBanner" hidden><b>Preview with sample numbers.</b> Nothing here is real and nothing is saved on a server. On your Netlify site this page asks for your password and shows your real visitors.</div>
+    <div class="banner" id="errBanner" hidden></div>
+
+    <div class="range" id="rangeRow" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <p class="sub" id="rangeNote"></p>
+      <div class="seg" role="group" aria-label="Time range" id="range">
+        <button type="button" data-days="7" aria-pressed="false">7 days</button>
+        <button type="button" data-days="30" aria-pressed="true">30 days</button>
+        <button type="button" data-days="90" aria-pressed="false">90 days</button>
+      </div>
+    </div>
+
+    <!-- Overview -->
+    <section id="p-overview" role="tabpanel" aria-label="Overview" style="display:grid;gap:18px">
+      <div class="kpis" id="kpis"></div>
+      <div class="card">
+        <h2>Visitors each day</h2>
+        <p class="sub">Everyone who opened the site. Tap a bar to see the day.</p>
+        <div class="chart" id="dayChart"></div>
+        <p class="readout" id="dayRead" aria-live="polite"></p>
+        <details class="tbl"><summary>Show as a table</summary><div class="scroll" id="dayTbl"></div></details>
+      </div>
+      <div class="grid2">
+        <div class="card"><h2>What visitors saw</h2><p class="sub">Share of visitors who scrolled each part into view.</p><div class="hbars" id="secBars"></div></div>
+        <div class="card"><h2>Where visitors left</h2><p class="sub" id="leftSub"></p><div class="hbars" id="leftBars"></div></div>
+      </div>
+    </section>
+
+    <!-- Visitors -->
+    <section id="p-visitors" role="tabpanel" aria-label="Visitors" hidden style="display:grid;gap:18px">
+      <div class="grid2">
+        <div class="card"><h2>Devices</h2><div class="hbars" id="devBars"></div></div>
+        <div class="card"><h2>Where they came from</h2><div class="hbars" id="refBars"></div></div>
+        <div class="card"><h2>Countries</h2><div class="hbars" id="ctyBars"></div></div>
+        <div class="card"><h2>States and regions</h2><div class="hbars" id="regBars"></div></div>
+        <div class="card"><h2>Cities</h2><div class="hbars" id="citBars"></div></div>
+        <div class="card"><h2>Language</h2><div class="hbars" id="lanBars"></div></div>
+        <div class="card"><h2>Profile they picked</h2><div class="hbars" id="proBars"></div></div>
+      </div>
+      <div class="card">
+        <h2>Latest visits</h2>
+        <p class="sub">Anonymous. No names or IP addresses are stored.</p>
+        <div class="scroll chart"><table id="recent"></table></div>
+      </div>
+    </section>
+
+    <!-- People -->
+    <section id="p-people" role="tabpanel" aria-label="People" hidden style="display:grid;gap:18px">
+      <div class="card">
+        <h2>People who shared details</h2>
+        <p class="sub">Everything here was typed by the person, on the website or by you. Nothing is guessed. Reply to each one, then mark it.</p>
+        <div class="kv" id="peopleKv"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+          <button class="btn sm" id="csvBtn" type="button">Download list (CSV)</button>
+          <button class="btn sm" id="addToggle" type="button" aria-expanded="false">Add someone from social media</button>
+        </div>
+        <form id="addForm" hidden style="display:grid;gap:12px;margin-top:14px" novalidate>
+          <p class="sub">Platforms do not send you a list of followers. When you see a new follower, subscriber or message, note it here so it counts in your audience numbers.</p>
+          <div class="row2">
+            <label class="field">What happened<select id="aKind"><option value="follow">Followed me</option><option value="subscribe">Subscribed</option><option value="message">Sent a message</option></select></label>
+            <label class="field">Where<select id="aPlat"></select></label>
+          </div>
+          <label class="field">Name (optional)<input id="aName" type="text" maxlength="60"></label>
+          <div class="row2">
+            <label class="field">Age group<select id="aAge"></select></label>
+            <label class="field">Gender<select id="aGen"></select></label>
+          </div>
+          <div class="row2">
+            <label class="field">Country<select id="aCountry"></select></label>
+            <label class="field">State<input id="aState" type="text" maxlength="40"></label>
+          </div>
+          <div class="row2">
+            <label class="field">City<input id="aCity" type="text" maxlength="60"></label>
+            <label class="field">District<input id="aDist" type="text" maxlength="60"></label>
+          </div>
+          <label class="field">Note<input id="aNote" type="text" maxlength="200"></label>
+          <button class="btn primary" type="submit">Add to the list</button>
+          <p class="msg" id="aMsg" role="status" aria-live="polite"></p>
+        </form>
+        <div class="chips" id="lFilter" style="margin-top:14px"></div>
+        <label class="field" style="margin-top:10px">Search<input id="lSearch" type="search" placeholder="Name, number, email, place"></label>
+      </div>
+      <div class="recs" id="lList"></div>
+    </section>
+
+    <!-- Audience -->
+    <section id="p-audience" role="tabpanel" aria-label="Audience" hidden style="display:grid;gap:18px">
+      <div class="kpis" id="audKpis"></div>
+      <div class="card"><p class="sub" id="audNote"></p></div>
+      <div class="grid2">
+        <div class="card"><h2>Age groups</h2><p class="sub">As people told us.</p><div class="hbars" id="ageBars"></div></div>
+        <div class="card"><h2>Gender</h2><p class="sub">As people told us.</p><div class="hbars" id="genBars"></div></div>
+        <div class="card"><h2>Countries</h2><div class="hbars" id="aCtyBars"></div></div>
+        <div class="card"><h2>India and abroad</h2><div class="hbars" id="intlBars"></div></div>
+        <div class="card"><h2>States</h2><div class="hbars" id="aStBars"></div></div>
+        <div class="card"><h2>Districts</h2><p class="sub">Only where people typed one.</p><div class="hbars" id="aDiBars"></div></div>
+        <div class="card"><h2>Cities</h2><div class="hbars" id="aCiBars"></div></div>
+        <div class="card"><h2>How they connected</h2><div class="hbars" id="aKindBars"></div></div>
+      </div>
+      <div class="card"><h2>Who did what</h2><p class="sub">Each list shows how many people told us who they are, their gender split and their average age group. Tap “Names” to see the list.</p></div>
+      <div id="whoList" style="display:grid;gap:18px"></div>
+    </section>
+
+    <!-- Network -->
+    <section id="p-network" role="tabpanel" aria-label="Network" hidden style="display:grid;gap:18px">
+      <div class="card">
+        <h2>Followers on each app</h2>
+        <p class="sub">Instagram, YouTube and the others do not share your follower count with this page. Look at each app now and then (say once a week), type the number below, and this page shows how you are growing.</p>
+        <form id="netForm" style="display:grid;gap:12px;margin-top:12px" novalidate>
+          <div class="row2">
+            <label class="field">App<select id="nPlat"></select></label>
+            <label class="field">Followers or subscribers<input id="nFol" type="number" inputmode="numeric" min="0" step="1" required></label>
+          </div>
+          <div class="row2">
+            <label class="field">Date<input id="nDate" type="date"></label>
+            <label class="field">Messages since last time (optional)<input id="nMsg" type="number" inputmode="numeric" min="0" step="1"></label>
+          </div>
+          <label class="field">Note (optional)<input id="nNote" type="text" maxlength="160" placeholder="e.g. a reel went viral"></label>
+          <button class="btn primary" type="submit">Save this count</button>
+          <p class="msg" id="nMsgOut" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+      <div class="kpis" id="netKpis"></div>
+      <div class="card"><h2>Total followers over time</h2><p class="sub">All apps added together, each time you saved a count. Tap a bar.</p><div class="chart" id="netChart"></div><p class="readout" id="netRead" aria-live="polite"></p></div>
+      <div class="grid2" id="netCards"></div>
+      <div class="grid2">
+        <div class="card"><h2>Share of your followers</h2><div class="hbars" id="netShare"></div></div>
+        <div class="card"><h2>People you noted from social media</h2><p class="sub">From the People tab.</p><div class="hbars" id="netPeople"></div></div>
+      </div>
+      <div class="card"><h2>Saved counts</h2><div class="recs" id="netList" style="margin-top:12px"></div></div>
+    </section>
+
+    <!-- Pets & robot -->
+    <section id="p-pets" role="tabpanel" aria-label="Pets and robot" hidden style="display:grid;gap:18px">
+      <div class="kpis" id="petKpis"></div>
+      <div class="grid2">
+        <div class="card"><h2>Which guard they chose</h2><p class="sub">Counts of times a guard was called.</p><div class="hbars" id="petBars"></div></div>
+        <div class="card"><h2>What they did with the guards</h2><p class="sub">Taps in the pet room.</p><div class="hbars" id="petActBars"></div></div>
+        <div class="card"><h2>What they asked the robot</h2><p class="sub">Topics only. The words typed are never saved.</p><div class="hbars" id="topicBars"></div></div>
+        <div class="card"><h2>Other things they did</h2><div class="hbars" id="doBars"></div></div>
+      </div>
+      <div class="card"><h2>People who tried them and left their details</h2><p class="sub">Only people who ticked the box on a form. It shows which guards they used and what they asked the robot.</p><div class="recs" id="triedList" style="margin-top:12px"></div></div>
+    </section>
+
+    <!-- Money -->
+    <section id="p-money" role="tabpanel" aria-label="Money" hidden style="display:grid;gap:18px">
+      <div class="card">
+        <h2>Taps on the Tip or pay card</h2>
+        <p class="sub">These show interest. Your UPI app holds the real payments, so add each payment you receive in the list below.</p>
+        <div class="kv" id="payKv"></div>
+      </div>
+      <div class="kpis" id="moneyKpis"></div>
+      <div class="card">
+        <h2>Add a payment you received</h2>
+        <form id="ledForm" style="display:grid;gap:12px;margin-top:10px" novalidate>
+          <div class="row2">
+            <label class="field">Amount (₹)<input id="lAmt" type="number" inputmode="decimal" min="1" step="1" required></label>
+            <label class="field">Type<select id="lKind"><option value="advance">Advance for work</option><option value="tip">Tip</option><option value="tutor">Tutor help</option><option value="other">Other income</option><option value="charity">Given to children (spent)</option></select></label>
+          </div>
+          <div class="row2">
+            <label class="field">From or to<input id="lFrom" type="text" maxlength="60" placeholder="Name or client"></label>
+            <label class="field">Date<input id="lDate" type="date"></label>
+          </div>
+          <label class="field">Note<input id="lNote" type="text" maxlength="160" placeholder="e.g. 2 wedding reels"></label>
+          <button class="btn primary" type="submit">Add to the list</button>
+          <p class="msg" id="lMsg" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+      <div class="card">
+        <h2>Money received by month</h2>
+        <p class="sub">Work, tips and tutor income you added. Money given to children is not counted here.</p>
+        <div class="chart" id="monthChart"></div>
+        <p class="readout" id="monthRead" aria-live="polite"></p>
+      </div>
+      <div class="card">
+        <h2>Pet-room coin purchases <span class="n" id="newC" hidden>0</span></h2>
+        <p class="sub">Visitors can pay you by UPI for pet-room coins. They send you the payment reference from their UPI app. Open your own UPI app, look for that payment, and only then press Approve. The coins reach them when they next open the pet room. The website cannot see your bank, so nothing is confirmed until you do.</p>
+        <div class="recs" id="coinList" style="margin-top:12px"></div>
+      </div>
+      <div class="card"><h2>Payment list</h2><div class="recs" id="ledList" style="margin-top:12px"></div></div>
+    </section>
+
+    <!-- Pledges -->
+    <section id="p-pledges" role="tabpanel" aria-label="Children’s help" hidden style="display:grid;gap:18px">
+      <div class="card">
+        <h2>Books, toys, clothes and food offered</h2>
+        <p class="sub">People send these from the “Books & toys for children” section. Reply to each one, then mark it.</p>
+        <div class="chips" id="pFilter" style="margin-top:12px"></div>
+      </div>
+      <div class="recs" id="pList"></div>
+    </section>
+
+    <div class="card" id="foot" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+      <p class="sub">Last 3 months of visits are kept. Download a backup now and then.</p>
+      <button class="btn sm" id="expBtn" type="button">Download backup</button>
+    </div>
+  </main>
+</div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="api.js"></script>
+<script>
+(function () {
+  'use strict';
+  var A = window.Admin, esc = A.esc, inr = A.inr;
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var S = { days: 30, stats: null, pledges: [], ledger: [], leads: [], network: [], tab: 'overview', pf: 'all', lf: 'all', lq: '' };
+  var SEC = { starring: 'Intro', daily: 'Today’s update', 'top-picks': 'Top picks', reels: 'My reels & work', tutor: 'Tutor with Danu Sir', prices: 'Prices', help: 'Books & toys for children', photos: 'Photo & design', artist: 'Artist', poems: 'Poems', stories: 'Stories', certificates: 'Awards & certificates', skills: 'Skill universe', resume: 'Experience', follow: 'Follow & subscribe', collab: 'Collaborate', genres: 'Browse by genre', contact: 'Contact' };
+  var KIND = { advance: 'Advance for work', tip: 'Tip', tutor: 'Tutor help', other: 'Other income', charity: 'Given to children' };
+  var DEV = { mobile: 'Phone', desktop: 'Computer', tablet: 'Tablet' };
+  var LANG = { en: 'English', ta: 'Tamil', kn: 'Kannada', hi: 'Hindi' };
+  var CCN = null; try { CCN = new Intl.DisplayNames(['en'], { type: 'region' }); } catch (e) { /* older browser */ }
+  var CC = new Proxy({}, { get: function (o, k) { if (typeof k !== 'string') return ''; try { return (CCN && CCN.of(k)) || k; } catch (e) { return k; } } });
+  var ACT = { chat: 'Robot questions', wa: 'WhatsApp taps', tip: 'Tip taps', advance: 'Advance taps', reel: 'Reels opened', ig: 'Instagram taps', yt: 'YouTube taps', fb: 'Facebook taps', dl: 'Bio downloads', pledge: 'Pledges sent', photo: 'Photos opened', poem: 'Poems opened', cert: 'Awards opened', share: 'Shared the portfolio', copy: 'Copied contact', hire: 'Hire taps', lead: 'Opened a form', tg: 'Telegram taps', li: 'LinkedIn taps', x: 'X taps', soc: 'Social link taps', pet: 'Pet guard taps', collab: 'Collaboration taps' };
+  var pct = function (a, b) { return b ? Math.round(a / b * 100) : 0; };
+  var dur = function (s) { s = Math.round(s || 0); return s >= 60 ? Math.floor(s / 60) + 'm ' + (s % 60) + 's' : s + 's'; };
+  var dshort = function (iso) { var d = new Date(iso + 'T00:00:00'); return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }); };
+  var dlong = function (iso) { var d = new Date(iso + 'T00:00:00'); return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }); };
+  var ago = function (ms) { var m = Math.round((Date.now() - ms) / 60000); if (m < 2) return 'just now'; if (m < 60) return m + ' min ago'; var h = Math.round(m / 60); if (h < 24) return h + ' h ago'; return Math.round(h / 24) + ' d ago'; };
+
+  /* ---------- sign-in ---------- */
+  function showGate(msg) { $('#gate').hidden = false; $('#desk').hidden = true; if (msg) $('#gateSub').textContent = msg; setTimeout(function () { $('#pw').focus(); }, 50); }
+  function showDesk() { $('#gate').hidden = true; $('#desk').hidden = false; $('#demoBanner').hidden = !A.demo; load(); }
+  A.onSignedOut = function () { showGate('Your session ended. Please sign in again.'); };
+  A.status().then(function (s) {
+    if (s.offline) { showGate('The admin server is not reachable from this address. Open this page on your Netlify site, at /admin/.'); $('#loginForm').hidden = true; return; }
+    if (!s.configured) { showGate('The admin password is not set yet. In Netlify, add ADMIN_PASSWORD (8 or more characters) under Environment variables, then deploy again.'); $('#loginForm').hidden = true; return; }
+    s.signedIn ? showDesk() : showGate();
+  });
+  $('#loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var b = $('#loginBtn'), m = $('#loginMsg'); b.disabled = true; m.className = 'msg'; m.textContent = 'Checking…';
+    A.login($('#pw').value).then(function () { $('#pw').value = ''; m.textContent = ''; showDesk(); })
+      .catch(function (err) { m.className = 'msg bad'; m.textContent = err.message; }).then(function () { b.disabled = false; });
+  });
+  $('#outBtn').addEventListener('click', function () { A.logout().then(function () { location.reload(); }); });
+
+  /* ---------- data ---------- */
+  function load() {
+    var bad = function (e) { $('#errBanner').hidden = false; $('#errBanner').textContent = e.message; };
+    $('#errBanner').hidden = true;
+    A.get('/api/admin/stats?days=' + S.days).then(function (r) { S.stats = r.stats; renderStats(); }).catch(bad);
+    A.get('/api/admin/pledges').then(function (r) { S.pledges = r.pledges; renderPledges(); renderKpis(); }).catch(bad);
+    A.get('/api/admin/ledger').then(function (r) { S.ledger = r.ledger; renderMoney(); renderKpis(); }).catch(bad);
+    A.get('/api/admin/leads').then(function (r) { S.leads = r.leads; renderPeople(); renderAudience(); renderPets(); renderNetwork(); }).catch(bad);
+    A.get('/api/admin/network').then(function (r) { S.network = r.network; renderNetwork(); }).catch(bad);
+    A.get('/api/admin/coinbuys').then(function (r) { S.coinbuys = r.buys; renderCoins(); }).catch(bad);
+  }
+
+  /* ---------- tabs and range ---------- */
+  $('#tabs').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-tab]'); if (!b) return;
+    S.tab = b.dataset.tab;
+    $$('.tab').forEach(function (t) { t.setAttribute('aria-selected', String(t === b)); });
+    ['overview', 'visitors', 'people', 'audience', 'network', 'pets', 'money', 'pledges'].forEach(function (k) { $('#p-' + k).hidden = k !== S.tab; });
+    $('#rangeRow').hidden = ['pledges', 'people', 'network', 'money'].indexOf(S.tab) > -1;
+    window.scrollTo(0, 0);
+  });
+  $('#range').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-days]'); if (!b) return;
+    S.days = +b.dataset.days;
+    $$('#range button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+    A.get('/api/admin/stats?days=' + S.days).then(function (r) { S.stats = r.stats; renderStats(); renderKpis(); renderAudience(); renderPets(); }).catch(function (er) { A.toast(er.message); });
+  });
+  $$('[data-tab]').forEach(function (b) { b.setAttribute('aria-controls', 'p-' + b.dataset.tab); });
+
+  /* ---------- pieces ---------- */
+  function kpi(l, v, d) { return '<div class="kpi"><div class="l">' + esc(l) + '</div><div class="v">' + v + '</div>' + (d ? '<div class="d">' + d + '</div>' : '') + '</div>'; }
+  function hbars(rows, total, label) {
+    if (!rows.length) return '<p class="empty">Nothing yet for this range.</p>';
+    var max = Math.max.apply(null, rows.map(function (r) { return r.n; })) || 1;
+    return rows.map(function (r) {
+      return '<div class="hb"><span class="nm">' + esc(label ? label(r.k) : r.k) + '</span><span class="tr"><i style="width:' + Math.max(1, Math.round(r.n / max * 100)) + '%"></i></span><span class="vl">' + r.n + ' · ' + pct(r.n, total) + '%</span></div>';
+    }).join('');
+  }
+  var niceMax = function (v) { if (v <= 5) return 5; var p = Math.pow(10, Math.floor(Math.log10(v))), n = v / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p; };
+  /* Vertical bars drawn to one scale: ticks at 0, half and the top, labels at the first, middle and last bar. */
+  function barSVG(data, label, aria) {
+    var W = 600, H = 190, L = 30, T = 10, B = 24, n = data.length, mx = niceMax(Math.max.apply(null, data.map(function (d) { return d.v; }).concat([1])));
+    var iw = W - L - 4, bw = iw / n, gap = Math.min(3, bw * .25), ph = H - T - B, out = '';
+    [0, mx / 2, mx].forEach(function (t) { var y = T + ph - t / mx * ph; out += '<line class="' + (t === 0 ? 'base' : 'grid') + '" x1="' + L + '" x2="' + (W - 4) + '" y1="' + y + '" y2="' + y + '"/><text x="' + (L - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + Math.round(t).toLocaleString('en-IN') + '</text>'; });
+    data.forEach(function (d, i) {
+      var h = d.v / mx * ph, x = L + i * bw + gap / 2, w = Math.max(2, bw - gap);
+      out += '<rect class="bar" data-b="' + i + '" x="' + x.toFixed(1) + '" y="' + (T + ph - h).toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + Math.max(h, d.v ? 2 : 0).toFixed(1) + '" rx="3"/>';
+      out += '<rect class="hit" data-i="' + i + '" x="' + (L + i * bw).toFixed(1) + '" y="' + T + '" width="' + bw.toFixed(1) + '" height="' + (ph + B) + '"/>';
+    });
+    (n <= 12 ? data.map(function (d, i) { return i; }) : [0, Math.floor((n - 1) / 2), n - 1]).forEach(function (i, k, all) { out += '<text x="' + (L + i * bw + bw / 2) + '" y="' + (H - 6) + '" text-anchor="' + (all.length > 3 ? 'middle' : k === 0 ? 'start' : k === 2 ? 'end' : 'middle') + '">' + esc(data[i].x) + '</text>'; });
+    return '<svg class="bars" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(aria) + '">' + out + '</svg>';
+  }
+  function wireBars(host, readEl, data, text, first) {
+    var set = function (i) {
+      $$('rect.bar', host).forEach(function (r) { r.classList.toggle('on', +r.dataset.b === i); });
+      readEl.innerHTML = text(data[i]);
+    };
+    host.onclick = host.onpointerover = function (e) { var h = e.target.closest && e.target.closest('[data-i]'); if (h) set(+h.dataset.i); };
+    set(first == null ? data.length - 1 : first);
+  }
+
+  /* ---------- Overview ---------- */
+  function renderKpis() {
+    var s = S.stats; if (!s) return;
+    var newP = S.pledges.filter(function (p) { return p.status === 'new'; }).length;
+    var n = $('#newN'); n.hidden = !newP; n.textContent = newP;
+    var newL = S.leads.filter(function (l) { return l.status === 'new' && (l.phone || l.email || l.tg); }).length;
+    var nl = $('#newL'); nl.hidden = !newL; nl.textContent = newL;
+    var cut = new Date(Date.now() - (s.days - 1) * 86400000).toISOString().slice(0, 10);
+    var inc = S.ledger.filter(function (x) { return x.kind !== 'charity' && x.date >= cut; }).reduce(function (a, x) { return a + x.amount; }, 0);
+    $('#rangeNote').textContent = 'Showing the last ' + s.days + ' days';
+    $('#kpis').innerHTML =
+      kpi('Visitors', s.total.toLocaleString('en-IN'), s.entered + ' opened the site · ' + s.returning + ' came back') +
+      kpi('Saw everything', s.finished.toLocaleString('en-IN'), pct(s.finished, s.total) + '% reached the contact section') +
+      kpi('Left early', s.leftEarly.toLocaleString('en-IN'), pct(s.leftEarly, s.total) + '% did not reach the end') +
+      kpi('Time on site', dur(s.avgDur), 'Scrolled ' + s.avgDepth + '% of the page on average') +
+      kpi('People who messaged', s.messagers.toLocaleString('en-IN'), (s.acts.chat || 0) + ' robot questions · ' + (s.acts.wa || 0) + ' WhatsApp taps') +
+      kpi('Tip and advance taps', (s.pay.tip + s.pay.advance).toLocaleString('en-IN'), s.pay.paid + ' said they paid') +
+      kpi('New pledges', newP, S.pledges.length + ' in total') +
+      kpi('Money you logged', inr(inc), 'In the last ' + s.days + ' days');
+  }
+  function renderStats() {
+    var s = S.stats; renderKpis();
+    var data = s.perDay.map(function (d) { return { v: d.n, x: dshort(d.day), day: d.day }; });
+    $('#dayChart').innerHTML = barSVG(data, null, 'Visitors per day for the last ' + s.days + ' days. Total ' + s.total + '.');
+    wireBars($('#dayChart'), $('#dayRead'), data, function (d) { return '<b>' + esc(dlong(d.day)) + '</b> · ' + d.v + ' visitor' + (d.v === 1 ? '' : 's'); });
+    $('#dayTbl').innerHTML = '<table><tr><th>Day</th><th>Visitors</th></tr>' + data.slice().reverse().map(function (d) { return '<tr><td>' + esc(dlong(d.day)) + '</td><td>' + d.v + '</td></tr>'; }).join('') + '</table>';
+    var base = Math.max(s.entered, 1);
+    $('#secBars').innerHTML = hbars(s.sections.map(function (r) { return { k: r.k, n: r.n }; }), base, function (k) { return SEC[k] || k; });
+    $('#leftSub').textContent = s.leftEarly ? s.leftEarly + ' visitors left before the contact section. This is the last part each one saw.' : 'Everyone reached the end.';
+    $('#leftBars').innerHTML = hbars(s.lastSeen.slice(0, 7), Math.max(s.leftEarly, 1), function (k) { return SEC[k] || k; });
+    $('#devBars').innerHTML = hbars(s.devices, s.total, function (k) { return DEV[k] || k; });
+    $('#refBars').innerHTML = hbars(s.refs, s.total);
+    $('#ctyBars').innerHTML = hbars(s.countries, s.total, function (k) { return CC[k] || k; });
+    $('#citBars').innerHTML = hbars(s.cities, s.total);
+    $('#regBars').innerHTML = hbars(s.regions || [], s.total);
+    renderAudience(); renderPets();
+    $('#lanBars').innerHTML = hbars(s.langs, s.total, function (k) { return LANG[k] || k; });
+    $('#proBars').innerHTML = hbars(s.profiles, s.total, function (k) { return k.charAt(0).toUpperCase() + k.slice(1); });
+    $('#payKv').innerHTML = [
+      ['Tip taps', s.pay.tip + ' · ' + inr(s.pay.tipAmt) + ' chosen'],
+      ['Advance taps', s.pay.advance + ' · ' + inr(s.pay.advAmt) + ' chosen'],
+      ['Said they paid (sent the WhatsApp note)', String(s.pay.paid)],
+      ['Robot questions', String(s.acts.chat || 0)],
+      ['WhatsApp taps', String(s.acts.wa || 0)]
+    ].map(function (r) { return '<div><span>' + esc(r[0]) + '</span><b>' + esc(r[1]) + '</b></div>'; }).join('');
+    $('#recent').innerHTML = '<tr><th>When</th><th>Device</th><th>Place</th><th>Time</th><th>Scrolled</th><th>Reached end</th><th>Last part seen</th><th>Did</th></tr>' + (s.recent.length ? s.recent.map(function (r) {
+      var did = Object.keys(r.acts || {}).map(function (k) { return (ACT[k] || k) + ' ' + r.acts[k]; }).join(', ') || '–';
+      return '<tr><td>' + esc(ago(r.last)) + '</td><td>' + esc(DEV[r.dev] || r.dev) + ' · ' + esc(r.ua) + '</td><td>' + esc([r.city, CC[r.country] || r.country].filter(Boolean).join(', ') || '–') + '</td><td>' + dur(r.dur) + '</td><td>' + r.depth + '%</td><td>' + (r.done ? 'Yes' : 'No') + '</td><td>' + esc(SEC[r.lastSec] || '–') + '</td><td>' + esc(did) + '</td></tr>';
+    }).join('') : '<tr><td colspan="8">No visits yet.</td></tr>');
+  }
+
+  /* ---------- Money ---------- */
+  var armed = {};
+  /* Pet-room coin purchases: approve only after the payment shows in your own UPI app. */
+  var CST = { pending: 'Waiting for you', approved: 'Approved', rejected: 'Not accepted' };
+  function renderCoins() {
+    var L = S.coinbuys || [], el = $('#coinList'); if (!el) return;
+    var pend = L.filter(function (x) { return x.status === 'pending'; }).length, nb = $('#newC'); if (nb) { nb.textContent = pend; nb.hidden = !pend; }
+    el.innerHTML = L.length ? L.slice(0, 80).map(function (x) {
+      return '<article class="rec" data-cid="' + esc(x.id) + '"><div class="rec-h"><b>₹' + esc(x.amount) + ' for ' + esc(x.coins) + ' coins</b><span class="pill ' + (x.status === 'approved' ? 'received' : x.status === 'rejected' ? 'declined' : 'new') + '">' + esc(CST[x.status] || x.status) + '</span></div>' +
+        '<div class="rec-m">UPI reference <b>' + esc(x.ref) + '</b> · ' + esc(ago(x.at)) + (x.status === 'approved' ? (x.claimed ? ' · collected in the pet room' : ' · not collected yet') : '') + '</div>' +
+        (x.status === 'pending' ? '<div class="rec-a"><button class="btn sm primary" type="button" data-cap>I saw the payment: approve</button><button class="btn sm danger" type="button" data-crj>Not accepted</button><button class="btn sm" type="button" data-copy="' + esc(x.ref) + '">Copy reference</button></div>' : '') + '</article>';
+    }).join('') : '<p class="empty">No coin purchases yet.</p>';
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('[data-cap],[data-crj]'); if (!a) return;
+    var art = a.closest('[data-cid]'), x = art && (S.coinbuys || []).filter(function (r) { return r.id === art.dataset.cid; })[0]; if (!x) return;
+    var st = a.hasAttribute('data-cap') ? 'approved' : 'rejected';
+    A.patch('/api/admin/coinbuys/' + encodeURIComponent(x.id), { status: st }).then(function (r) { x.status = r.buy.status; renderCoins(); if (st === 'approved') { A.get('/api/admin/ledger').then(function (r2) { S.ledger = r2.ledger; renderMoney(); renderKpis(); }).catch(function () {}); } A.toast(st === 'approved' ? 'Approved. The coins will reach them.' : 'Marked not accepted'); }).catch(function (er) { A.toast(er.message); });
+  });
+  function renderMoney() {
+    var L = S.ledger, sum = function (f) { return L.filter(f).reduce(function (a, x) { return a + x.amount; }, 0); };
+    var inc = function (x) { return x.kind !== 'charity'; };
+    $('#moneyKpis').innerHTML =
+      kpi('Money received', inr(sum(inc)), L.filter(inc).length + ' payments in total') +
+      kpi('Work advances', inr(sum(function (x) { return x.kind === 'advance'; })), 'Booked work') +
+      kpi('Tips', inr(sum(function (x) { return x.kind === 'tip'; })), 'From visitors') +
+      kpi('Given to children', inr(sum(function (x) { return x.kind === 'charity'; })), 'Books, toys and food');
+    // Months, oldest to newest, six of them.
+    var months = [], d = new Date(); d.setDate(1);
+    for (var i = 5; i >= 0; i--) { var m = new Date(d.getFullYear(), d.getMonth() - i, 1); months.push({ key: m.getFullYear() + '-' + String(m.getMonth() + 1).padStart(2, '0'), x: m.toLocaleDateString('en-IN', { month: 'short' }), v: 0 }); }
+    L.filter(inc).forEach(function (x) { var mo = months.filter(function (m) { return m.key === x.date.slice(0, 7); })[0]; if (mo) mo.v += x.amount; });
+    $('#monthChart').innerHTML = barSVG(months, null, 'Money received by month for the last six months.');
+    var lastWith = -1; months.forEach(function (m, i) { if (m.v > 0) lastWith = i; });
+    wireBars($('#monthChart'), $('#monthRead'), months, function (m) { return '<b>' + esc(m.x) + '</b> · ' + inr(m.v) + ' received'; }, lastWith < 0 ? months.length - 1 : lastWith);
+    $('#ledList').innerHTML = L.length ? L.map(function (x) {
+      var k = armed[x.id];
+      return '<div class="rec"><div class="rec-h"><b>' + (x.kind === 'charity' ? '− ' : '') + inr(x.amount) + '</b><span class="pill ' + (x.kind === 'charity' ? 'received' : 'contacted') + '">' + esc(KIND[x.kind] || x.kind) + '</span></div><div class="rec-m">' + esc(dshort(x.date)) + (x.from ? ' · ' + esc(x.from) : '') + (x.note ? ' · ' + esc(x.note) : '') + '</div><div class="rec-a"><button class="btn sm danger" type="button" data-del="' + esc(x.id) + '">' + (k ? 'Tap again to delete' : 'Delete') + '</button></div></div>';
+    }).join('') : '<p class="empty">No payments yet. Add the first one above.</p>';
+  }
+  $('#lDate').value = new Date().toISOString().slice(0, 10);
+  $('#ledForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var m = $('#lMsg'), amt = Number($('#lAmt').value);
+    if (!(amt > 0)) { m.className = 'msg bad'; m.textContent = 'Enter an amount above zero.'; return; }
+    A.post('/api/admin/ledger', { amount: amt, kind: $('#lKind').value, from: $('#lFrom').value, note: $('#lNote').value, date: $('#lDate').value })
+      .then(function (r) { S.ledger.unshift(r.entry); S.ledger.sort(function (a, b) { return (b.date + b.id).localeCompare(a.date + a.id); }); renderMoney(); renderKpis(); $('#lAmt').value = ''; $('#lFrom').value = ''; $('#lNote').value = ''; m.className = 'msg ok'; m.textContent = 'Added.'; })
+      .catch(function (er) { m.className = 'msg bad'; m.textContent = er.message; });
+  });
+  $('#ledList').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-del]'); if (!b) return; var id = b.dataset.del;
+    if (!armed[id]) { armed = {}; armed[id] = 1; renderMoney(); return; }
+    A.del('/api/admin/ledger/' + encodeURIComponent(id)).then(function () { S.ledger = S.ledger.filter(function (x) { return x.id !== id; }); armed = {}; renderMoney(); renderKpis(); A.toast('Deleted'); }).catch(function (er) { A.toast(er.message); });
+  });
+
+  /* ---------- Pledges ---------- */
+  var KL = { books: 'Books', toys: 'Toys', food: 'Food', clothes: 'Clothes', other: 'Other', money: 'Money' };
+  var HOW = { drop: 'Will drop it off', pickup: 'Wants it collected', courier: 'Will send by courier' };
+  var ST = { new: 'New', contacted: 'Contacted', received: 'Received', declined: 'Declined' };
+  function renderPledges() {
+    var counts = { all: S.pledges.length }; Object.keys(ST).forEach(function (k) { counts[k] = S.pledges.filter(function (p) { return p.status === k; }).length; });
+    $('#pFilter').innerHTML = ['all'].concat(Object.keys(ST)).map(function (k) { return '<button class="chip" type="button" data-pf="' + k + '" aria-pressed="' + (S.pf === k) + '">' + (k === 'all' ? 'All' : ST[k]) + ' ' + counts[k] + '</button>'; }).join('');
+    var list = S.pledges.filter(function (p) { return S.pf === 'all' || p.status === S.pf; });
+    $('#pList').innerHTML = list.length ? list.map(function (p) {
+      var digits = String(p.phone || '').replace(/\D/g, ''), wa = digits.length === 10 ? '91' + digits : digits;
+      var k = armed['p' + p.id];
+      return '<article class="rec" data-id="' + esc(p.id) + '"><div class="rec-h"><b>' + esc(p.name) + '</b><span class="pill ' + esc(p.status) + '">' + esc(ST[p.status] || p.status) + '</span></div>' +
+        '<div class="chips">' + p.kinds.map(function (x) { return '<span class="chip">' + esc(KL[x] || x) + '</span>'; }).join('') + '</div>' +
+        (p.what ? '<div class="rec-m"><b>' + esc(p.what) + '</b></div>' : '') +
+        '<div class="rec-m">' + esc(HOW[p.how] || '') + (p.city ? ' · ' + esc(p.city) : '') + ' · ' + esc(ago(p.at)) + '</div>' +
+        (p.note ? '<div class="rec-m">“' + esc(p.note) + '”</div>' : '') +
+        '<div class="rec-m">' + (p.phone ? 'Phone <b>' + esc(p.phone) + '</b> ' : '') + (p.email ? 'Email <b>' + esc(p.email) + '</b>' : '') + '</div>' +
+        '<div class="rec-a">' + (p.phone ? '<button class="btn sm" type="button" data-copy="' + esc(p.phone) + '">Copy number</button><a class="btn sm" href="https://wa.me/' + esc(wa) + '" target="_blank" rel="noopener">WhatsApp</a>' : '') + (p.email ? '<button class="btn sm" type="button" data-copy="' + esc(p.email) + '">Copy email</button>' : '') + '</div>' +
+        '<label class="field">Your note<input type="text" maxlength="300" value="' + esc(p.ownerNote || '') + '" data-note placeholder="e.g. Called, pickup on Sunday"></label>' +
+        '<div class="rec-a">' + Object.keys(ST).filter(function (s) { return s !== p.status; }).map(function (s) { return '<button class="btn sm" type="button" data-st="' + s + '">Mark ' + ST[s].toLowerCase() + '</button>'; }).join('') + '<button class="btn sm danger" type="button" data-pdel>' + (k ? 'Tap again to delete' : 'Delete') + '</button></div></article>';
+    }).join('') : '<p class="empty">Nothing here yet. When someone offers books, toys, clothes or food, it shows up here.</p>';
+  }
+  $('#pFilter').addEventListener('click', function (e) { var b = e.target.closest('[data-pf]'); if (b) { S.pf = b.dataset.pf; renderPledges(); } });
+  function pledgeOf(el) { var a = el.closest('[data-id]'); return a && S.pledges.filter(function (p) { return p.id === a.dataset.id; })[0]; }
+  $('#pList').addEventListener('click', function (e) {
+    var p = pledgeOf(e.target); if (!p) return;
+    var c = e.target.closest('[data-copy]'); if (c) { A.copy(c.dataset.copy, 'Copied'); return; }
+    var s = e.target.closest('[data-st]');
+    if (s) { A.patch('/api/admin/pledges/' + encodeURIComponent(p.id), { status: s.dataset.st }).then(function () { p.status = s.dataset.st; renderPledges(); renderKpis(); A.toast('Marked ' + ST[p.status].toLowerCase()); }).catch(function (er) { A.toast(er.message); }); return; }
+    if (e.target.closest('[data-pdel]')) {
+      if (!armed['p' + p.id]) { armed = {}; armed['p' + p.id] = 1; renderPledges(); return; }
+      A.del('/api/admin/pledges/' + encodeURIComponent(p.id)).then(function () { S.pledges = S.pledges.filter(function (x) { return x.id !== p.id; }); armed = {}; renderPledges(); renderKpis(); A.toast('Deleted'); }).catch(function (er) { A.toast(er.message); });
+    }
+  });
+  $('#pList').addEventListener('change', function (e) {
+    var n = e.target.closest('[data-note]'); if (!n) return; var p = pledgeOf(n); if (!p) return;
+    A.patch('/api/admin/pledges/' + encodeURIComponent(p.id), { ownerNote: n.value }).then(function () { p.ownerNote = n.value; A.toast('Note saved'); }).catch(function (er) { A.toast(er.message); });
+  });
+
+  /* ---------- shared bits for people and audience ---------- */
+  var AGE = { u18: 'Under 18', '18-24': '18 to 24', '25-34': '25 to 34', '35-44': '35 to 44', '45-54': '45 to 54', '55+': '55 and over' };
+  var AGE_MID = { u18: 15, '18-24': 21, '25-34': 29.5, '35-44': 39.5, '45-54': 49.5, '55+': 60 };
+  var AGE_ORDER = ['u18', '18-24', '25-34', '35-44', '45-54', '55+'];
+  var GEN = { female: 'Female', male: 'Male', other: 'Another way' };
+  var LKIND = { updates: 'Wants updates', contribute: 'Wants to contribute', collaborate: 'Wants to collaborate', robot: 'Left details with the robot', bio: 'Downloaded the bio', hire: 'Asked about hiring', share: 'Shared the portfolio', follow: 'Followed on social media', subscribe: 'Subscribed on social media', message: 'Messaged on social media' };
+  var LSHORT = { updates: 'Updates', contribute: 'Contribute', collaborate: 'Collaborate', robot: 'Robot', bio: 'Bio download', hire: 'Hire', share: 'Shared', follow: 'Followed', subscribe: 'Subscribed', message: 'Messaged' };
+  var KIND_ORDER = ['bio', 'hire', 'share', 'updates', 'contribute', 'collaborate', 'robot', 'follow', 'subscribe', 'message'];
+  var LST = { new: 'New', contacted: 'Contacted', done: 'Done' };
+  var PLATS = ['Instagram', 'YouTube', 'Facebook', 'Snapchat', 'Moj', 'WhatsApp', 'Telegram', 'LinkedIn', 'X', 'Threads', 'Pinterest', 'Behance', 'Discord', 'GitHub', 'Reddit', 'Twitch', 'Spotify', 'Other'];
+  var COUNTRIES = [['IN', 'India'], ['US', 'United States'], ['GB', 'United Kingdom'], ['AE', 'UAE'], ['SG', 'Singapore'], ['CA', 'Canada'], ['AU', 'Australia'], ['SA', 'Saudi Arabia'], ['QA', 'Qatar'], ['KW', 'Kuwait'], ['MY', 'Malaysia'], ['LK', 'Sri Lanka'], ['NP', 'Nepal'], ['DE', 'Germany'], ['', 'Not sure']];
+  var PETN = { lion: 'Lion', husky: 'Husky', turtle: 'Turtle', dragon: 'Dragon' };
+  var PETA = { summon: 'Called it', feed: 'Fed it', drink: 'Gave water', play: 'Played', doctor: 'Took to doctor', dress: 'Dressed it', wash: 'Washed it', potty: 'Potty', sleep: 'Put to sleep', talk: 'Talked to it', fight: 'All four fought', game: 'Played a mini game' };
+  var TOPN = { hello: 'Said hello', thanks: 'Thanks and goodbye', help: 'Help and menu', hire: 'Hiring Danu Sir', prices: 'Prices and tips', contact: 'Contact', resume: 'Résumé and bio', skills: 'Skills and tools', follow: 'Follow and updates', poems: 'Poems', stories: 'Stories', artist: 'Art', awards: 'Awards', custom: 'Custom work', reels: 'Reels and edits', 'top-picks': 'Top picks', location: 'Where he is based', about: 'About Danu Sir', 'about-bot': 'About the robot', tutor: 'Tutoring', other: 'Something else' };
+  var tally = function (list, get) { var m = {}; list.forEach(function (x) { var k = get(x); if (k !== undefined && k !== null && k !== '') m[k] = (m[k] || 0) + 1; }); return Object.keys(m).map(function (k) { return { k: k, n: m[k] }; }).sort(function (a, b) { return b.n - a.n; }); };
+  var has = function (l) { return !!(l.phone || l.email || l.tg); };
+  function pkey(l) { var d = String(l.phone || '').replace(/\D/g, ''); return d ? 'p' + d.slice(-10) : l.email ? 'e' + l.email.toLowerCase() : l.tg ? 't' + l.tg.toLowerCase() : l.name ? 'n' + l.name.toLowerCase() + '|' + (l.city || '') : 'r' + l.id; }
+  function dedupe(list) { var seen = {}, out = []; list.forEach(function (l) { var k = pkey(l); if (!seen[k]) { seen[k] = 1; out.push(l); } else if (!out.some(function (o) { return o.id === l.id; })) { /* same person again: counted once */ } }); return out; }
+  function avgAge(list) { var a = list.filter(function (l) { return AGE_MID[l.age]; }); if (!a.length) return null; return { n: a.length, v: a.reduce(function (t, l) { return t + AGE_MID[l.age]; }, 0) / a.length }; }
+  function ageName(v) { var best = AGE_ORDER[0], d = 999; AGE_ORDER.forEach(function (k) { var x = Math.abs(AGE_MID[k] - v); if (x < d) { d = x; best = k; } }); return AGE[best]; }
+  function genderLine(list) { var g = list.filter(function (l) { return GEN[l.gender]; }); if (!g.length) return 'Gender not told'; return ['female', 'male', 'other'].map(function (k) { var n = g.filter(function (l) { return l.gender === k; }).length; return n ? GEN[k] + ' ' + pct(n, g.length) + '%' : ''; }).filter(Boolean).join(' · ') + ' (of ' + g.length + ' who told us)'; }
+  function place(l) { return [l.district, l.city || l.geoCity, l.state, l.country ? CC[l.country] : ''].filter(function (x, i, a) { return x && a.indexOf(x) === i; }).join(', '); }
+  var inRange = function (l) { return l.at >= Date.now() - S.days * 86400000; };
+
+  /* ---------- People ---------- */
+  var fillSel = function (el, list, blank) { el.innerHTML = list.map(function (o) { return '<option value="' + esc(o[0]) + '">' + esc(o[1]) + '</option>'; }).join(''); if (blank) el.value = ''; };
+  fillSel($('#aPlat'), PLATS.map(function (p) { return [p, p]; }));
+  fillSel($('#aAge'), [['', 'Not told']].concat(AGE_ORDER.map(function (k) { return [k, AGE[k]]; })));
+  fillSel($('#aGen'), [['', 'Not told'], ['female', 'Female'], ['male', 'Male'], ['other', 'Another way']]);
+  fillSel($('#aCountry'), COUNTRIES);
+  fillSel($('#nPlat'), PLATS.map(function (p) { return [p, p]; }));
+  $('#nDate').value = new Date().toISOString().slice(0, 10);
+
+  function renderPeople() {
+    var L = S.leads, uq = dedupe(L);
+    $('#peopleKv').innerHTML = [
+      ['Entries', String(L.length)], ['Different people', String(uq.length)],
+      ['With a way to reach them', String(uq.filter(has).length)], ['Waiting for your reply', String(L.filter(function (l) { return l.status === 'new' && has(l); }).length)]
+    ].map(function (r) { return '<div><span>' + esc(r[0]) + '</span><b>' + esc(r[1]) + '</b></div>'; }).join('');
+    var counts = { all: L.length, site: L.filter(function (l) { return l.via !== 'manual'; }).length, social: L.filter(function (l) { return l.via === 'manual'; }).length };
+    KIND_ORDER.forEach(function (k) { counts[k] = L.filter(function (l) { return l.kind === k; }).length; });
+    $('#lFilter').innerHTML = [['all', 'All'], ['site', 'From the website'], ['social', 'From social media']].concat(KIND_ORDER.map(function (k) { return [k, LSHORT[k]]; })).map(function (f) {
+      return '<button class="chip" type="button" data-lf="' + f[0] + '" aria-pressed="' + (S.lf === f[0]) + '">' + esc(f[1]) + ' ' + counts[f[0]] + '</button>';
+    }).join('');
+    var q = S.lq.trim().toLowerCase();
+    var list = L.filter(function (l) {
+      if (S.lf === 'site' && l.via === 'manual') return false;
+      if (S.lf === 'social' && l.via !== 'manual') return false;
+      if (KIND_ORDER.indexOf(S.lf) > -1 && l.kind !== S.lf) return false;
+      if (!q) return true;
+      return [l.name, l.company, l.social, l.phone, l.email, l.tg, l.city, l.district, l.state, l.country ? CC[l.country] : '', l.note].join(' ').toLowerCase().indexOf(q) > -1;
+    });
+    $('#lList').innerHTML = list.length ? list.slice(0, 120).map(function (l) {
+      var digits = String(l.phone || '').replace(/\D/g, ''), wa = digits.length === 10 ? '91' + digits : digits, k = armed['l' + l.id], did = l.did || {};
+      var tried = [].concat(Object.keys(did.pets || {}).map(function (x) { return PETN[x] || x; }), Object.keys(did.petActs || {}).slice(0, 3).map(function (x) { return (PETA[x] || x).toLowerCase(); }));
+      var asked = Object.keys(did.topics || {}).map(function (x) { return (TOPN[x] || x).toLowerCase(); });
+      var who = [AGE[l.age], GEN[l.gender]].filter(Boolean).join(' · ');
+      return '<article class="rec" data-lid="' + esc(l.id) + '"><div class="rec-h"><b>' + esc(l.name || (l.minor ? 'Someone under 18' : 'Did not give a name')) + '</b><span class="pill ' + esc(l.status === 'done' ? 'received' : l.status) + '">' + esc(LST[l.status] || l.status) + '</span></div>' +
+        '<div class="chips"><span class="chip">' + esc(LKIND[l.kind] || l.kind) + '</span>' + (l.platform ? '<span class="chip">' + esc(l.platform) + '</span>' : '') + (l.via === 'manual' ? '<span class="chip">Added by you</span>' : '') + (l.interests || []).filter(function (x) { return x !== l.kind; }).map(function (x) { return '<span class="chip">' + esc(LSHORT[x] || x) + '</span>'; }).join('') + '</div>' +
+        '<div class="rec-m">' + esc(who || 'Age and gender not told') + (place(l) ? ' · ' + esc(place(l)) : '') + ' · ' + esc(ago(l.at)) + '</div>' +
+        (l.company ? '<div class="rec-m">Company <b>' + esc(l.company) + '</b></div>' : '') +
+        (has(l) ? '<div class="rec-m">' + (l.phone ? 'Phone <b>' + esc(l.phone) + '</b> ' : '') + (l.email ? 'Email <b>' + esc(l.email) + '</b> ' : '') + (l.tg ? 'Telegram <b>@' + esc(l.tg) + '</b>' : '') + '</div>' : '') +
+        (l.social ? '<div class="rec-m">Link <b>' + esc(l.social) + '</b></div>' : '') +
+        (l.note ? '<div class="rec-m">“' + esc(l.note) + '”</div>' : '') +
+        (tried.length || asked.length ? '<div class="rec-m">Tried: ' + esc(tried.join(', ') || 'nothing in the pet room') + (asked.length ? ' · Asked the robot about ' + esc(asked.join(', ')) : '') + '</div>' : '') +
+        '<div class="rec-a">' + (l.phone ? '<button class="btn sm" type="button" data-copy="' + esc(l.phone) + '">Copy number</button><a class="btn sm" href="https://wa.me/' + esc(wa) + '" target="_blank" rel="noopener">WhatsApp</a>' : '') + (l.email ? '<button class="btn sm" type="button" data-copy="' + esc(l.email) + '">Copy email</button>' : '') + (l.tg ? '<a class="btn sm" href="https://t.me/' + esc(l.tg) + '" target="_blank" rel="noopener">Telegram</a>' : '') + (/^https?:\/\//i.test(l.social || '') ? '<a class="btn sm" href="' + esc(l.social) + '" target="_blank" rel="noopener noreferrer">Open link</a>' : '') + '</div>' +
+        '<label class="field">Your note<input type="text" maxlength="300" value="' + esc(l.ownerNote || '') + '" data-lnote placeholder="e.g. Called, wants a reel for a cafe"></label>' +
+        '<div class="rec-a">' + Object.keys(LST).filter(function (x) { return x !== l.status; }).map(function (x) { return '<button class="btn sm" type="button" data-lst="' + x + '">Mark ' + LST[x].toLowerCase() + '</button>'; }).join('') + '<button class="btn sm danger" type="button" data-ldel>' + (k ? 'Tap again to delete' : 'Delete') + '</button></div></article>';
+    }).join('') + (list.length > 120 ? '<p class="empty">Showing the newest 120 of ' + list.length + '. Use search or download the list.</p>' : '') : '<p class="empty">Nothing here yet. When someone fills a form on the website, or when you add someone from social media, they show up here.</p>';
+    renderKpis();
+  }
+  $('#lFilter').addEventListener('click', function (e) { var b = e.target.closest('[data-lf]'); if (b) { S.lf = b.dataset.lf; renderPeople(); } });
+  $('#lSearch').addEventListener('input', function (e) { S.lq = e.target.value; renderPeople(); });
+  $('#addToggle').addEventListener('click', function () { var f = $('#addForm'); f.hidden = !f.hidden; this.setAttribute('aria-expanded', String(!f.hidden)); });
+  function leadOf(el) { var a = el.closest('[data-lid]'); return a && S.leads.filter(function (l) { return l.id === a.dataset.lid; })[0]; }
+  $('#lList').addEventListener('click', function (e) {
+    var l = leadOf(e.target); if (!l) return;
+    var c = e.target.closest('[data-copy]'); if (c) { A.copy(c.dataset.copy, 'Copied'); return; }
+    var st = e.target.closest('[data-lst]');
+    if (st) { A.patch('/api/admin/leads/' + encodeURIComponent(l.id), { status: st.dataset.lst }).then(function () { l.status = st.dataset.lst; renderPeople(); A.toast('Marked ' + LST[l.status].toLowerCase()); }).catch(function (er) { A.toast(er.message); }); return; }
+    if (e.target.closest('[data-ldel]')) {
+      if (!armed['l' + l.id]) { armed = {}; armed['l' + l.id] = 1; renderPeople(); return; }
+      A.del('/api/admin/leads/' + encodeURIComponent(l.id)).then(function () { S.leads = S.leads.filter(function (x) { return x.id !== l.id; }); armed = {}; renderPeople(); renderAudience(); renderPets(); renderNetwork(); A.toast('Deleted'); }).catch(function (er) { A.toast(er.message); });
+    }
+  });
+  $('#lList').addEventListener('change', function (e) {
+    var n = e.target.closest('[data-lnote]'); if (!n) return; var l = leadOf(n); if (!l) return;
+    A.patch('/api/admin/leads/' + encodeURIComponent(l.id), { ownerNote: n.value }).then(function () { l.ownerNote = n.value; A.toast('Note saved'); }).catch(function (er) { A.toast(er.message); });
+  });
+  $('#addForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var m = $('#aMsg');
+    A.post('/api/admin/leads', { kind: $('#aKind').value, platform: $('#aPlat').value, name: $('#aName').value, age: $('#aAge').value, gender: $('#aGen').value, country: $('#aCountry').value, state: $('#aState').value, city: $('#aCity').value, district: $('#aDist').value, note: $('#aNote').value })
+      .then(function (r) { S.leads.unshift(r.lead); renderPeople(); renderAudience(); renderNetwork(); ['aName', 'aState', 'aCity', 'aDist', 'aNote'].forEach(function (id) { $('#' + id).value = ''; }); m.className = 'msg ok'; m.textContent = 'Added.'; })
+      .catch(function (er) { m.className = 'msg bad'; m.textContent = er.message; });
+  });
+  /* The list as a spreadsheet file. A cell that starts with = + - or @ gets a ' in front, so a spreadsheet never runs it as a formula. */
+  $('#csvBtn').addEventListener('click', function () {
+    var head = ['Date', 'What', 'Where from', 'Platform', 'Name', 'Company', 'Phone', 'Email', 'Telegram', 'Link', 'Age group', 'Gender', 'Country', 'State', 'City', 'District', 'Wants', 'Status', 'Their note', 'Your note'];
+    var cell = function (v) { v = String(v == null ? '' : v); if (/^[=+\-@\t\r]/.test(v)) v = "'" + v; return '"' + v.replace(/"/g, '""') + '"'; };
+    var rows = S.leads.map(function (l) { return [new Date(l.at).toISOString().slice(0, 10), LKIND[l.kind] || l.kind, l.via === 'manual' ? 'Added by me' : 'Website', l.platform || '', l.name, l.company || '', l.phone, l.email, l.tg ? '@' + l.tg : '', l.social || '', AGE[l.age] || '', GEN[l.gender] || '', l.country ? CC[l.country] : '', l.state, l.city || l.geoCity || '', l.district, (l.interests || []).join(' '), LST[l.status] || l.status, l.note, l.ownerNote]; });
+    var csv = '﻿' + [head].concat(rows).map(function (r) { return r.map(cell).join(','); }).join('\r\n');
+    var url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })), a = document.createElement('a');
+    a.href = url; a.download = 'people-' + new Date().toISOString().slice(0, 10) + '.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  });
+
+  /* ---------- Audience ---------- */
+  function renderAudience() {
+    var s = S.stats, all = S.leads.filter(inRange), uq = dedupe(all);
+    var withAge = uq.filter(function (l) { return AGE[l.age]; }), avg = avgAge(uq);
+    var known = uq.filter(function (l) { return l.country; }), abroad = known.filter(function (l) { return l.country !== 'IN'; });
+    var men = uq.filter(function (l) { return GEN[l.gender]; });
+    $('#audKpis').innerHTML =
+      kpi('People in your list', uq.length.toLocaleString('en-IN'), all.length + ' entries in the last ' + S.days + ' days') +
+      kpi('Can be contacted', uq.filter(has).length.toLocaleString('en-IN'), pct(uq.filter(has).length, uq.length) + '% left a number, email or Telegram') +
+      kpi('Outside India', pct(abroad.length, known.length) + '%', abroad.length + ' of ' + known.length + ' with a known country') +
+      kpi('Average age', avg ? ageName(avg.v) : '–', avg ? 'About ' + Math.round(avg.v) + ', worked out from ' + avg.n + ' age groups' : 'Nobody told us yet');
+    $('#audNote').textContent = 'These numbers come only from what people typed or what you added. Age and gender are never guessed, and many people skip them, so treat the percentages as a guide, not a headline.' + (s ? ' Visitors to the site are in the Visitors tab: ' + (s.regions || []).length + ' regions seen.' : '');
+    $('#ageBars').innerHTML = hbars(AGE_ORDER.map(function (k) { return { k: k, n: uq.filter(function (l) { return l.age === k; }).length }; }).filter(function (r) { return r.n; }), Math.max(withAge.length, 1), function (k) { return AGE[k]; });
+    $('#genBars').innerHTML = hbars(['female', 'male', 'other'].map(function (k) { return { k: k, n: uq.filter(function (l) { return l.gender === k; }).length }; }).filter(function (r) { return r.n; }), Math.max(men.length, 1), function (k) { return GEN[k]; });
+    $('#aCtyBars').innerHTML = hbars(tally(known, function (l) { return l.country; }).slice(0, 10), Math.max(known.length, 1), function (k) { return CC[k]; });
+    $('#intlBars').innerHTML = hbars([{ k: 'India', n: known.length - abroad.length }, { k: 'Other countries', n: abroad.length }].filter(function (r) { return r.n; }), Math.max(known.length, 1));
+    $('#aStBars').innerHTML = hbars(tally(uq, function (l) { return l.state; }).slice(0, 10), Math.max(uq.filter(function (l) { return l.state; }).length, 1));
+    $('#aDiBars').innerHTML = hbars(tally(uq, function (l) { return l.district; }).slice(0, 10), Math.max(uq.filter(function (l) { return l.district; }).length, 1));
+    $('#aCiBars').innerHTML = hbars(tally(uq, function (l) { return l.city || l.geoCity; }).slice(0, 10), Math.max(uq.filter(function (l) { return l.city || l.geoCity; }).length, 1));
+    $('#aKindBars').innerHTML = hbars(KIND_ORDER.map(function (k) { return { k: k, n: all.filter(function (l) { return l.kind === k; }).length }; }).filter(function (r) { return r.n; }), Math.max(all.length, 1), function (k) { return LKIND[k]; });
+    var TAPS = { bio: 'dl', hire: 'hire', share: 'share' };
+    $('#whoList').innerHTML = KIND_ORDER.map(function (k) {
+      var rows = all.filter(function (l) { return l.kind === k; });
+      var named = rows.filter(function (l) { return l.name; }), a = avgAge(rows);
+      var taps = s && TAPS[k] ? (s.acts[TAPS[k]] || 0) : null;
+      var head = '<h2>' + esc(LKIND[k]) + ' · ' + rows.length + '</h2>';
+      if (!rows.length) return '<div class="card">' + head + '<p class="empty">Nobody yet in this range.</p></div>';
+      return '<div class="card">' + head +
+        '<div class="kv"><div><span>' + (taps != null ? 'Taps on the site' : 'Entries') + '</span><b>' + (taps != null ? taps : rows.length) + '</b></div>' +
+        (taps != null ? '<div><span>Told us who they are</span><b>' + rows.length + ' · ' + pct(rows.length, Math.max(taps, rows.length)) + '%</b></div>' : '') +
+        '<div><span>Gender</span><b style="text-align:right">' + esc(genderLine(rows)) + '</b></div>' +
+        '<div><span>Average age</span><b>' + (a ? esc(ageName(a.v)) + ' (about ' + Math.round(a.v) + ')' : 'Not told') + '</b></div></div>' +
+        '<details class="tbl"><summary>Names (' + named.length + ')</summary><div class="scroll"><table><tr><th>Name</th><th>Age</th><th>Gender</th><th>Place</th><th>When</th></tr>' +
+        (named.length ? named.slice(0, 200).map(function (l) { return '<tr><td>' + esc(l.name) + '</td><td>' + esc(AGE[l.age] || '–') + '</td><td>' + esc(GEN[l.gender] || '–') + '</td><td>' + esc(place(l) || '–') + '</td><td>' + esc(ago(l.at)) + '</td></tr>'; }).join('') : '<tr><td colspan="5">Nobody gave a name.</td></tr>') + '</table></div></details></div>';
+    }).join('');
+  }
+
+  /* ---------- Network ---------- */
+  var nk = function (x) { return x.date + String(x.at || 0).padStart(14, '0'); };
+  function renderNetwork() {
+    var N = S.network, by = {};
+    N.forEach(function (x) { (by[x.platform] = by[x.platform] || []).push(x); });
+    var plats = Object.keys(by).map(function (p) {
+      var arr = by[p].slice().sort(function (a, b) { return nk(a).localeCompare(nk(b)); }), last = arr[arr.length - 1], prev = arr[arr.length - 2];
+      return { p: p, arr: arr, latest: last.followers, date: last.date, delta: prev ? last.followers - prev.followers : null, prevV: prev ? prev.followers : 0, first: arr[0] };
+    }).sort(function (a, b) { return b.latest - a.latest; });
+    var total = plats.reduce(function (t, x) { return t + x.latest; }, 0);
+    var chg = plats.reduce(function (t, x) { return t + (x.delta || 0); }, 0), chgBase = plats.reduce(function (t, x) { return t + (x.delta != null ? x.prevV : 0); }, 0);
+    var cut = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+    var msgs = N.filter(function (x) { return x.date >= cut; }).reduce(function (t, x) { return t + (x.messages || 0); }, 0);
+    $('#netKpis').innerHTML =
+      kpi('Followers in total', total.toLocaleString('en-IN'), plats.length + ' apps counted') +
+      kpi('Change since last count', (chg >= 0 ? '+' : '') + chg.toLocaleString('en-IN'), chgBase ? (chg >= 0 ? '+' : '') + (chg / chgBase * 100).toFixed(1) + '% on those apps' : 'Save a second count to see growth') +
+      kpi('Biggest app', plats[0] ? esc(plats[0].p) : '–', plats[0] ? plats[0].latest.toLocaleString('en-IN') + ' followers' : '') +
+      kpi('Messages noted', msgs.toLocaleString('en-IN'), 'In the last 30 days');
+    var dates = Array.from(new Set(N.map(function (x) { return x.date; }))).sort().slice(-12);
+    var series = dates.map(function (d) {
+      var t = 0; plats.forEach(function (x) { var upto = x.arr.filter(function (r) { return r.date <= d; }); if (upto.length) t += upto[upto.length - 1].followers; });
+      return { v: t, x: dshort(d), day: d };
+    });
+    $('#netChart').innerHTML = series.length ? barSVG(series, null, 'Total followers on each date a count was saved.') : '<p class="empty">Save your first count above.</p>';
+    if (series.length) wireBars($('#netChart'), $('#netRead'), series, function (d) { return '<b>' + esc(dlong(d.day)) + '</b> · ' + d.v.toLocaleString('en-IN') + ' followers in total'; }); else $('#netRead').textContent = '';
+    $('#netCards').innerHTML = plats.map(function (x) {
+      var up = x.delta != null && x.delta >= 0;
+      return '<div class="card"><h2>' + esc(x.p) + '</h2><div class="kv"><div><span>Followers now</span><b>' + x.latest.toLocaleString('en-IN') + '</b></div>' +
+        '<div><span>Since last count</span><b>' + (x.delta == null ? 'First count' : (up ? '+' : '') + x.delta.toLocaleString('en-IN') + (x.prevV ? ' (' + (up ? '+' : '') + (x.delta / x.prevV * 100).toFixed(1) + '%)' : '')) + '</b></div>' +
+        '<div><span>Since the first count</span><b>' + (x.arr.length > 1 ? (x.latest - x.first.followers >= 0 ? '+' : '') + (x.latest - x.first.followers).toLocaleString('en-IN') : '–') + '</b></div>' +
+        '<div><span>Last counted</span><b>' + esc(dshort(x.date)) + '</b></div></div></div>';
+    }).join('');
+    $('#netShare').innerHTML = hbars(plats.map(function (x) { return { k: x.p, n: x.latest }; }), Math.max(total, 1));
+    var social = S.leads.filter(function (l) { return l.via === 'manual'; });
+    $('#netPeople').innerHTML = hbars(tally(social, function (l) { return l.platform; }), Math.max(social.length, 1));
+    $('#netList').innerHTML = N.length ? N.slice(0, 60).map(function (x) {
+      var k = armed['n' + x.id];
+      return '<div class="rec"><div class="rec-h"><b>' + esc(x.platform) + ' · ' + x.followers.toLocaleString('en-IN') + '</b><span class="pill contacted">' + esc(dshort(x.date)) + '</span></div>' + ((x.messages || x.note) ? '<div class="rec-m">' + (x.messages ? x.messages + ' messages' : '') + (x.messages && x.note ? ' · ' : '') + esc(x.note || '') + '</div>' : '') + '<div class="rec-a"><button class="btn sm danger" type="button" data-ndel="' + esc(x.id) + '">' + (k ? 'Tap again to delete' : 'Delete') + '</button></div></div>';
+    }).join('') : '<p class="empty">No counts yet.</p>';
+  }
+  $('#netForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var m = $('#nMsgOut'), f = $('#nFol').value;
+    if (f === '' || !(Number(f) >= 0)) { m.className = 'msg bad'; m.textContent = 'Type the number of followers you see in the app.'; return; }
+    A.post('/api/admin/network', { platform: $('#nPlat').value, date: $('#nDate').value, followers: Number(f), messages: Number($('#nMsg').value) || 0, note: $('#nNote').value })
+      .then(function (r) { S.network.unshift(r.entry); renderNetwork(); $('#nFol').value = ''; $('#nMsg').value = ''; $('#nNote').value = ''; m.className = 'msg ok'; m.textContent = 'Saved.'; })
+      .catch(function (er) { m.className = 'msg bad'; m.textContent = er.message; });
+  });
+  $('#netList').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-ndel]'); if (!b) return; var id = b.dataset.ndel;
+    if (!armed['n' + id]) { armed = {}; armed['n' + id] = 1; renderNetwork(); return; }
+    A.del('/api/admin/network/' + encodeURIComponent(id)).then(function () { S.network = S.network.filter(function (x) { return x.id !== id; }); armed = {}; renderNetwork(); A.toast('Deleted'); }).catch(function (er) { A.toast(er.message); });
+  });
+
+  /* ---------- Pets and robot ---------- */
+  function renderPets() {
+    var s = S.stats; if (!s) return;
+    var ent = Math.max(s.entered, 1);
+    $('#petKpis').innerHTML =
+      kpi('Played with a guard', (s.petUsers || 0).toLocaleString('en-IN'), pct(s.petUsers || 0, ent) + '% of people who opened the site') +
+      kpi('Talked to the robot', (s.robotUsers || 0).toLocaleString('en-IN'), pct(s.robotUsers || 0, ent) + '% of people who opened the site') +
+      kpi('Robot questions', (s.robotAsks || 0).toLocaleString('en-IN'), s.robotUsers ? ((s.robotAsks || 0) / s.robotUsers).toFixed(1) + ' per person' : 'None yet') +
+      kpi('Pet room taps', (s.petActs || []).reduce(function (t, x) { return t + x.n; }, 0).toLocaleString('en-IN'), 'Feeding, play, sleep and more');
+    $('#petBars').innerHTML = hbars(s.pets || [], Math.max((s.pets || []).reduce(function (t, x) { return t + x.n; }, 0), 1), function (k) { return PETN[k] || k; });
+    $('#petActBars').innerHTML = hbars((s.petActs || []).slice(0, 10), Math.max((s.petActs || []).reduce(function (t, x) { return t + x.n; }, 0), 1), function (k) { return PETA[k] || k; });
+    $('#topicBars').innerHTML = hbars((s.topics || []).slice(0, 12), Math.max((s.topics || []).reduce(function (t, x) { return t + x.n; }, 0), 1), function (k) { return TOPN[k] || k; });
+    var DO = [['photo', 'Opened a photo'], ['reel', 'Opened a reel'], ['poem', 'Opened a poem'], ['cert', 'Opened an award'], ['dl', 'Downloaded the bio'], ['hire', 'Tapped hire'], ['share', 'Shared the portfolio'], ['soc', 'Tapped a social link'], ['lead', 'Opened a form'], ['pledge', 'Sent a pledge']];
+    $('#doBars').innerHTML = hbars(DO.map(function (d) { return { k: d[0], n: s.acts[d[0]] || 0 }; }).filter(function (r) { return r.n; }).sort(function (a, b) { return b.n - a.n; }), ent, function (k) { return (DO.filter(function (d) { return d[0] === k; })[0] || [])[1] || k; });
+    var tried = S.leads.filter(function (l) { return l.did && (Object.keys(l.did.pets || {}).length || Object.keys(l.did.topics || {}).length) && inRange(l); });
+    $('#triedList').innerHTML = tried.length ? tried.slice(0, 40).map(function (l) {
+      var d = l.did;
+      return '<div class="rec"><div class="rec-h"><b>' + esc(l.name || 'No name given') + '</b><span class="pill contacted">' + esc(ago(l.at)) + '</span></div><div class="rec-m">' +
+        (Object.keys(d.pets || {}).length ? 'Guards: ' + esc(Object.keys(d.pets).map(function (x) { return PETN[x] || x; }).join(', ')) + '. ' : '') +
+        (Object.keys(d.petActs || {}).length ? 'Did: ' + esc(Object.keys(d.petActs).map(function (x) { return (PETA[x] || x).toLowerCase(); }).join(', ')) + '. ' : '') +
+        (Object.keys(d.topics || {}).length ? 'Asked the robot about: ' + esc(Object.keys(d.topics).map(function (x) { return (TOPN[x] || x).toLowerCase(); }).join(', ')) + '.' : '') +
+        '</div><div class="rec-m">' + esc([AGE[l.age], GEN[l.gender], place(l)].filter(Boolean).join(' · ') || 'No details about them') + '</div></div>';
+    }).join('') : '<p class="empty">Nobody who tried the guards or the robot has left their details yet.</p>';
+  }
+
+  /* ---------- backup ---------- */
+  if (A.demo) $('#foot').hidden = true;
+  $('#expBtn').addEventListener('click', function () {
+    A.get('/api/admin/export').then(function (r) {
+      var url = URL.createObjectURL(new Blob([JSON.stringify(r, null, 2)], { type: 'application/json' })), a = document.createElement('a');
+      a.href = url; a.download = 'portfolio-backup-' + new Date().toISOString().slice(0, 10) + '.json'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+    }).catch(function (er) { A.toast(er.message); });
+  });
+})();
+</script>
+</body>
+</html>
