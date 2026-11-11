@@ -1,0 +1,11 @@
+{
+  "name": "e-daniel-portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "E Daniel portfolio with a login-only admin, editor and visitor insights on Netlify Functions and Blobs.",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0",
+    "@netlify/functions": "^3.0.0"
+  }
+}
