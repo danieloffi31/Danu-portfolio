@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="robots" content="noindex, nofollow">
+<title>E Daniel Editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600&display=swap">
+<link rel="stylesheet" href="admin.css">
+<style>
+/* v37: look and feel, voice, music, pets */
+.colrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.colrow input[type=color] { width: 56px; height: 48px; padding: 2px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.colrow code { font: 600 13px var(--mono); color: var(--ink2); }
+.sws { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.sw { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--line); box-shadow: inset 0 0 0 2px rgba(255,255,255,.25); }
+.sw[aria-pressed="true"] { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
+.rng { display: grid; gap: 4px; }
+.rng input[type=range] { width: 100%; min-height: 40px; accent-color: var(--accent); }
+.rng .rd { font: 700 13px var(--mono); color: var(--ink); }
+.rng .rh { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 600; color: var(--ink2); }
+.thprev { border-radius: 14px; padding: 16px; display: grid; gap: 10px; border: 1px solid rgba(128,128,128,.35); }
+.thprev .pc { padding: 14px; display: grid; gap: 8px; border: 1px solid rgba(128,128,128,.3); }
+.thprev b { font-size: 22px; letter-spacing: .04em; }
+.thprev .pb { justify-self: start; padding: 10px 18px; border-radius: 8px; color: #fff; font-weight: 700; }
+.warn { padding: 10px 12px; border-radius: 10px; background: var(--warn-bg); color: var(--warn); font-size: 13px; font-weight: 600; }
+.pbtn { min-width: 44px; min-height: 44px; }
+.pimg { width: 64px; height: 64px; border-radius: 12px; object-fit: contain; background: var(--surface2); flex: 0 0 auto; }
+.prow { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.prow .tx { min-width: 0; flex: 1 1 auto; }
+.mrow { display: grid; gap: 10px; }
+.mrow .rec-a .btn { min-height: 44px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section class="login" id="gate" hidden>
+  <div class="brand"><span class="brand-mark">ED</span><div><small>Owner only</small></div></div>
+  <h1>Editor</h1>
+  <p class="sub" id="gateSub">Please sign in on the admin page first. Then come back here.</p>
+  <a class="btn primary" href="index.html">Go to sign-in</a>
+</section>
+
+<div id="desk" hidden>
+  <header class="top">
+    <div class="top-row">
+      <div class="brand"><span class="brand-mark">ED</span><div><h1>Editor</h1><small>Add, change, remove</small></div></div>
+      <div class="top-links"><a class="btn sm" href="index.html">Dashboard</a><a class="btn sm" href="../">Website</a></div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="What to edit" id="tabs"></nav>
+  </header>
+  <main>
+    <div class="banner" id="demoBanner" hidden><b>Preview.</b> Changes stay in this browser only. On your Netlify site, “Save and publish” updates the live website for everyone.</div>
+    <div class="banner" id="errBanner" hidden></div>
+    <section id="panel" style="display:grid;gap:14px"></section>
+  </main>
+</div>
+</div>
+
+<div class="savebar" id="saveBar" hidden>
+  <span class="st" id="saveSt">No changes yet</span>
+  <button class="btn primary" id="saveBtn" type="button" disabled>Save and publish</button>
+</div>
+<datalist id="plats"><option>Instagram</option><option>YouTube</option><option>Facebook</option><option>Snapchat</option><option>Moj</option><option>Telegram</option><option>LinkedIn</option><option>X</option><option>Threads</option><option>Pinterest</option><option>Behance</option><option>Discord</option><option>GitHub</option><option>Reddit</option><option>Twitch</option><option>Spotify</option><option>Website</option></datalist>
+<div id="sheetHost"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="api.js"></script>
+<script src="builtin.js"></script>
+<script>
+(function () {
+  'use strict';
+  var A = window.Admin, esc = A.esc, B = window.BUILTIN || { lists: {}, availability: '', daily: [], socials: [], words: {}, i18n: {} };
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var clone = function (o) { return JSON.parse(JSON.stringify(o)); };
+  var rid = function () { return Math.random().toString(36).slice(2, 8); };
+  var today = function () { return new Date().toISOString().slice(0, 10); };
+  var TAGS = [['creator', 'Creator edit'], ['vfx', 'VFX edit'], ['work', 'Work & long-form']];
+  var HELP0 = {
+    on: true, title: 'Books & toys for children',
+    intro: 'Some children in orphanages and poor homes have no books to read and no toys to play with. Tips from this site go to food, education and basic needs. You can also give books, toys, clothes or food. Tell me what you can give and I will get back to you.',
+    note: 'Pledges go only to Danu Sir. Send money only to the UPI ID shown in the Tip or pay card.', dropMode: 'hidden', address: '', hours: '',
+    needs: [
+      { id: 'n1', kind: 'books', title: 'Story books and school books', note: 'Picture books, story books and textbooks in good condition, any language.', have: 0, need: 0 },
+      { id: 'n2', kind: 'toys', title: 'Toys and games', note: 'Clean toys, board games, balls, puzzles and art supplies.', have: 0, need: 0 },
+      { id: 'n3', kind: 'clothes', title: 'Clothes', note: 'Clean, usable clothes for children of any age.', have: 0, need: 0 },
+      { id: 'n4', kind: 'food', title: 'Food and groceries', note: 'Packed, unopened food and groceries that keep well.', have: 0, need: 0 }
+    ], stories: []
+  };
+
+  /* Translation fields: the page shows these when a visitor picks Tamil, Kannada, Hindi or Telugu. Empty means the English shows. */
+  var TR_LANGS = [['ta', 'Tamil'], ['kn', 'Kannada'], ['hi', 'Hindi'], ['te', 'Telugu']];
+  function TR_FIELDS(keys, what) {
+    var out = [];
+    TR_LANGS.forEach(function (lg) {
+      keys.forEach(function (k) {
+        var big = k === 'body', note = k === 'note';
+        out.push({ k: k + '_' + lg[0], t: big || note ? 'area' : undefined, rows: big ? 8 : undefined, l: (k === 'body' ? 'The ' + what : k === 'title' ? 'Title' : k === 'kicker' ? 'Label' : 'Card note') + ' in ' + lg[1] + ' (optional)' });
+      });
+    });
+    return out;
+  }
+  /* What each list can edit. t: text, area, image, select, tags, num */
+  var LISTS = {
+    reels: { label: 'Reels', noun: 'reel', thumb: 'poster', sub: function (x) { return [x.dur, x.ratio].filter(Boolean).join(' · '); }, blank: function () { return { title: '', src: '', poster: '', dur: '', ratio: 'portrait', tags: ['creator'], desc: '' }; },
+      fields: [{ k: 'title', l: 'Title', req: 1 }, { k: 'src', l: 'Video file or link', hint: 'A file already on the site, for example videos/new-reel.mp4, or a direct link to the video.', req: 1 }, { k: 'poster', t: 'image', l: 'Cover picture' }, { k: 'desc', t: 'area', l: 'Short description' }, { k: 'dur', l: 'Length, for example 0:40' }, { k: 'ratio', t: 'select', l: 'Shape', o: [['portrait', 'Portrait'], ['landscape', 'Landscape'], ['square', 'Square']] }, { k: 'tags', t: 'tags', l: 'Show under' }] },
+    topPicks: { label: 'Top picks', noun: 'top pick', thumb: 'poster', sub: function (x) { return [x.dur, x.ratio].filter(Boolean).join(' · '); }, blank: function () { return { title: '', src: '', poster: '', dur: '', ratio: 'portrait', tags: ['creator'], desc: '' }; } },
+    photos: { label: 'Photos', noun: 'photo', thumb: 'src', sub: function (x) { return x.cap || ''; }, blank: function () { return { title: '', cap: '', src: '' }; },
+      fields: [{ k: 'title', l: 'Title', req: 1 }, { k: 'cap', l: 'Caption' }, { k: 'src', t: 'image', l: 'Photo', req: 1 }] },
+    certificates: { label: 'Awards', noun: 'award', thumb: 'src', sub: function (x) { return [x.org, x.year].filter(Boolean).join(' · '); }, blank: function () { return { src: '', cat: 'school', title: '', org: '', year: '', note: '' }; },
+      fields: [{ k: 'title', l: 'Title', req: 1 }, { k: 'org', l: 'Given by' }, { k: 'year', l: 'Year' }, { k: 'note', l: 'What it was for' }, { k: 'cat', t: 'select', l: 'Group', o: [['sports', 'Sports'], ['school', 'School and academic'], ['art', 'Art awards']] }, { k: 'src', t: 'image', l: 'Picture of the certificate' }] },
+    poems: { label: 'Poems', noun: 'poem', thumb: 'art', sub: function (x) { return String(x.body || '').split('\n')[0]; }, blank: function () { return { title: '', art: '', body: '' }; },
+      fields: [{ k: 'title', l: 'Poem title', req: 1 }, { k: 'body', t: 'area', l: 'The poem', rows: 10, req: 1 }, { k: 'art', t: 'image', l: 'Drawing for the poem' }].concat(TR_FIELDS(['title', 'body'], 'poem')) },
+    tutor: { label: 'Tutor', noun: 'tutor item', thumb: '', sub: function (x) { return [x.price, x.desc].filter(Boolean).join(' · '); }, blank: function () { return { title: '', desc: '', price: '' }; },
+      fields: [{ k: 'title', l: 'Name of the item', req: 1 }, { k: 'desc', t: 'area', l: 'What the student gets' }, { k: 'price', l: 'Price, for example ₹199' }] },
+    prices: { label: 'Prices', noun: 'price', thumb: '', sub: function (x) { return [x.price, x.note].filter(Boolean).join(' · '); }, blank: function () { return { name: '', price: '', note: '' }; },
+      fields: [{ k: 'name', l: 'What it is for, for example Reel edit', req: 1 }, { k: 'price', l: 'Price, for example ₹500 per reel' }, { k: 'note', t: 'area', l: 'Note' }] }
+  };
+  LISTS.stories = { label: 'Stories', noun: 'story', top: 'stories', thumb: 'art', sub: function (x) { return [x.kicker, String(x.body || '').length + ' characters'].filter(Boolean).join(' · '); }, blank: function () { return { title: '', kicker: 'Short story', art: '', note: '', body: '' }; },
+    fields: [{ k: 'title', l: 'Title', req: 1 }, { k: 'kicker', l: 'Label above the title, for example Short novel · excerpt' }, { k: 'note', t: 'area', l: 'Short note shown on the card' }, { k: 'body', t: 'area', l: 'The story or letter', rows: 14, req: 1 }, { k: 'art', t: 'image', l: 'Cover picture' }].concat(TR_FIELDS(['title', 'kicker', 'note', 'body'], 'story')) };
+  LISTS.socials = { label: 'Social links', noun: 'social link', top: 'socials', thumb: '', sub: function (x) { return [x.handle, x.count].filter(Boolean).join(' · '); }, blank: function () { return { label: '', handle: '', url: '', count: '' }; },
+    fields: [{ k: 'label', l: 'App or site, for example Telegram', req: 1, dl: 'plats' }, { k: 'handle', l: 'Your name there, for example @danu_edits' }, { k: 'url', l: 'Link, starting with https://', req: 1, hint: 'Open your profile in the app, tap Share, then Copy link, and paste it here.' }, { k: 'count', l: 'Followers note (optional), for example 1.2K followers' }] };
+  LISTS.topPicks.fields = LISTS.reels.fields;
+  LISTS.topPicks.label = 'Top picks';
+  var TABS = [['daily', 'Daily update'], ['help', 'Children’s help'], ['collab', 'Collaboration & forms'], ['reels', 'Reels'], ['topPicks', 'Top picks'], ['photos', 'Photos'], ['certificates', 'Awards'], ['poems', 'Poems'], ['stories', 'Stories'], ['words', 'Letters & words'], ['social', 'Social links'], ['lang', 'Language'], ['tutor', 'Tutor'], ['prices', 'Prices'], ['status', 'Status line'], ['look', 'Look & feel'], ['voice', 'Voice & sound'], ['music', 'Music'], ['pets', 'Pets']];
+
+  var COLLAB0 = { on: true, title: 'Collaborate and stay in touch', intro: 'Want to work together, contribute to the children’s book drive, or just hear about new work? Choose what fits. Everything is optional, and only Danu Sir sees what you send.', note: '', items: [
+    { id: 'c1', title: 'Brand reels and shoutouts', note: 'Sponsored reels, product shorts and shoutouts for your brand.' }, { id: 'c2', title: 'Joint videos', note: 'Co-create a video, a challenge or a series with another creator.' },
+    { id: 'c3', title: 'Projects for children', note: 'Books, toys, teaching videos and drives that help children in need.' }, { id: 'c4', title: 'Editing partnerships', note: 'Long-term work with a studio, a channel or a wedding team.' }] };
+  var FORMS0 = { bioAsk: true, hireAsk: true, shareAsk: true, robotAsk: true, bioRequire: true, hireRequire: true };
+  var LANGS = [['ta', 'Tamil'], ['kn', 'Kannada'], ['hi', 'Hindi'], ['te', 'Telugu']];
+  var S = { tab: 'daily', saved: {}, lists: {}, daily: [], help: clone(HELP0), avail: B.availability || '', dirty: false, armed: '', words: null, collab: null, forms: null, i18n: {}, lang: 'ta', lq: '', langAll: false, theme: null, effects: null, voice: null, music: null, pets: null, play: -1, busy: false };
+
+  /* ---------- sign-in ---------- */
+  A.onSignedOut = function () { $('#desk').hidden = true; $('#saveBar').hidden = true; $('#gate').hidden = false; $('#gateSub').textContent = 'Your session ended. Please sign in again on the admin page.'; };
+  A.status().then(function (s) {
+    if (s.offline || !s.configured || !s.signedIn) { $('#gate').hidden = false; if (s.offline) $('#gateSub').textContent = 'The admin server is not reachable from this address. Open this page on your Netlify site.'; return; }
+    start();
+  });
+  function start() {
+    $('#desk').hidden = false; $('#saveBar').hidden = false; $('#demoBanner').hidden = !A.demo;
+    A.get('/api/admin/content').then(function (r) {
+      var c = r.content || {}; S.saved = c;
+      Object.keys(LISTS).forEach(function (k) { var src = LISTS[k].top ? c[LISTS[k].top] : (c.lists && c.lists[k]); S.lists[k] = Array.isArray(src) ? clone(src) : null; });
+      S.words = c.words ? clone(c.words) : null; S.collab = c.collab ? Object.assign(clone(COLLAB0), clone(c.collab)) : null; S.forms = c.forms ? Object.assign(clone(FORMS0), clone(c.forms)) : null; S.i18n = c.i18n ? clone(c.i18n) : {}; S.savedI18n = !!c.i18n;
+      S.collab && S.collab.items.forEach(function (x) { x.id = x.id || rid(); });
+      S.daily = Array.isArray(c.daily) ? clone(c.daily) : clone(B.daily || []);
+      S.daily.forEach(function (d) { d.id = d.id || rid(); });
+      if (c.help) S.help = Object.assign(clone(HELP0), clone(c.help));
+      if (c.availability) S.avail = c.availability;
+      S.theme = c.theme ? clone(c.theme) : null; S.effects = c.effects ? clone(c.effects) : null; S.voice = c.voice ? clone(c.voice) : null; S.music = c.music ? clone(c.music) : null; S.pets = c.pets ? clone(c.pets) : null;
+      render();
+    }).catch(function (e) { $('#errBanner').hidden = false; $('#errBanner').textContent = e.message; });
+  }
+
+  function mark() { S.dirty = true; $('#saveBtn').disabled = false; $('#saveSt').textContent = 'You have changes that are not published yet'; }
+  function base(k) { return (B.lists || {})[k] || (k === 'socials' ? B.socials : null) || []; }
+  function list(k) { if (S.lists[k] === null) S.lists[k] = clone(base(k)); return S.lists[k]; }
+
+  /* ---------- tabs ---------- */
+  $('#tabs').innerHTML = TABS.map(function (t) { return '<button class="tab" role="tab" data-tab="' + t[0] + '" aria-selected="' + (t[0] === S.tab) + '">' + esc(t[1]) + '</button>'; }).join('');
+  $('#tabs').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-tab]'); if (!b) return; S.tab = b.dataset.tab; S.armed = '';
+    Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (t) { t.setAttribute('aria-selected', String(t === b)); });
+    render(); window.scrollTo(0, 0);
+  });
+
+  function render() {
+    var p = $('#panel');
+    if (S.tab === 'daily') p.innerHTML = dailyHTML();
+    else if (S.tab === 'help') p.innerHTML = helpHTML();
+    else if (S.tab === 'words') p.innerHTML = wordsHTML();
+    else if (S.tab === 'collab') p.innerHTML = collabHTML();
+    else if (S.tab === 'lang') p.innerHTML = langHTML();
+    else if (S.tab === 'social') p.innerHTML = socialHTML();
+    else if (S.tab === 'look') { p.innerHTML = lookHTML(); thPreview(); }
+    else if (S.tab === 'voice') p.innerHTML = voiceHTML();
+    else if (S.tab === 'music') p.innerHTML = musicHTML();
+    else if (S.tab === 'pets') p.innerHTML = petsHTML();
+    else if (S.tab === 'status') p.innerHTML = '<div class="card"><h2>Status line</h2><p class="sub">Shown at the top of the site next to “Open to work”.</p><label class="field" style="margin-top:12px">Availability<input id="avail" type="text" maxlength="120" value="' + esc(S.avail) + '"></label></div>';
+    else p.innerHTML = listHTML(S.tab);
+  }
+
+
+  /* ---------- Look and feel ---------- */
+  var TH0 = { accent: '#e50914', bg: '#0b0b0d', text: '#f4f2ee', font: '', radius: 12, card: '', title: '', heroDim: 0 };
+  var ACCENTS = [['#e50914', 'Red (now)'], ['#ff7a00', 'Orange'], ['#f5b301', 'Gold'], ['#2fbf71', 'Green'], ['#18b7c9', 'Teal'], ['#2f7bff', 'Blue'], ['#8e5bff', 'Purple'], ['#ff4fa3', 'Pink']];
+  var BGS = [['#0b0b0d', 'Black (now)'], ['#0a1020', 'Midnight blue'], ['#08140f', 'Forest'], ['#14091a', 'Plum'], ['#1a1a1f', 'Charcoal'], ['#f6f4ef', 'Light paper']];
+  var INKS = [['#f4f2ee', 'Warm white (now)'], ['#ffffff', 'White'], ['#ffe9a8', 'Cream gold'], ['#17171a', 'Near black']];
+  var FONT_OPTS = [['', 'Original (condensed headings)'], ['clean', 'Clean and simple'], ['serif', 'Book style (serif)'], ['rounded', 'Soft and round'], ['mono', 'Typewriter']];
+  var CARD_OPTS = [['', 'Original'], ['flat', 'Flat (no shadow)'], ['glass', 'Frosted glass'], ['outline', 'Outline only']];
+  function thv() { return Object.assign({}, TH0, S.theme || {}); }
+  function thset() { if (!S.theme) S.theme = {}; return S.theme; }
+  function efv() { return Object.assign({ snow: false, sparkles: false, hearts: false, grain: false, intensity: 3, animations: true }, S.effects || {}); }
+  function efset() { if (!S.effects) S.effects = {}; return S.effects; }
+  function lumOf(h) { var c = [1, 3, 5].map(function (i) { var v = parseInt(h.slice(i, i + 2), 16) / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; }
+  function contrast(a, b) { var x = lumOf(a), y = lumOf(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+  function swatches(key, list, cur) { return '<div class="sws">' + list.map(function (c) { return '<button class="sw" type="button" data-thset="' + key + ':' + c[0] + '" style="background:' + c[0] + '" aria-label="' + esc(c[1]) + '" aria-pressed="' + (cur.toLowerCase() === c[0]) + '"></button>'; }).join('') + '</div>'; }
+  function colorField(key, label, cur, presets, extra) {
+    return '<div class="field"><span>' + label + '</span><div class="colrow"><input type="color" data-th="' + key + '" value="' + esc(cur) + '" aria-label="' + esc(label) + '"><code data-rd="' + key + '">' + esc(cur) + '</code><button class="btn sm" type="button" data-thdef="' + key + '">Use the original</button></div>' + swatches(key, presets, cur) + (extra || '') + '</div>';
+  }
+  function lookHTML() {
+    var t = thv(), e = efv(), sel = function (o, v) { return o.map(function (x) { return '<option value="' + x[0] + '"' + (v === x[0] ? ' selected' : '') + '>' + x[1] + '</option>'; }).join(''); };
+    return '<div class="card"><h2>Look and feel</h2><p class="sub">Change the colours, letters and mood of the whole website. Nothing changes for visitors until you press Save and publish. “Reset to the original look” puts everything back.</p>' +
+      '<div class="thprev" id="thPrev" style="margin-top:12px"><b>E DANIEL</b><div class="pc"><span>This is how a card will look.</span><span class="pb">A button</span></div></div><p class="warn" id="thWarn" hidden style="margin-top:10px"></p></div>' +
+      '<div class="card"><h2>Colours</h2><div style="display:grid;gap:16px;margin-top:12px">' +
+      colorField('accent', 'Main colour (buttons, highlights)', t.accent, ACCENTS) + colorField('bg', 'Page background', t.bg, BGS) + colorField('text', 'Text colour', t.text, INKS) + '</div></div>' +
+      '<div class="card"><h2>Letters and shapes</h2><div style="display:grid;gap:16px;margin-top:12px">' +
+      '<label class="field">Letter style<select data-th="font">' + sel(FONT_OPTS, t.font) + '</select></label>' +
+      '<label class="field">Card style<select data-th="card">' + sel(CARD_OPTS, t.card) + '</select></label>' +
+      '<div class="rng"><div class="rh"><span>Corner roundness of cards and pictures</span><span class="rd" data-rd="radius">' + t.radius + ' px</span></div><input type="range" min="0" max="32" step="1" data-th="radius" value="' + t.radius + '" aria-label="Corner roundness"></div>' +
+      '<div class="rng"><div class="rh"><span>Darkness over the top picture</span><span class="rd" data-rd="heroDim">' + t.heroDim + ' %</span></div><input type="range" min="0" max="80" step="5" data-th="heroDim" value="' + t.heroDim + '" aria-label="Darkness over the top picture"></div>' +
+      '<label class="field">Name next to the logo at the top<input type="text" data-th="title" maxlength="24" placeholder="Leave empty to keep E DANIEL" value="' + esc(t.title) + '"><span class="hint">Up to 24 letters. It shows in capitals.</span></label></div></div>' +
+      '<div class="card"><h2>Effects</h2><p class="sub">Small moving touches over the site. They stop by themselves for visitors who asked their phone for less motion.</p>' +
+      '<div class="chips" style="margin-top:12px">' + [['snow', 'Snow'], ['sparkles', 'Sparkles'], ['hearts', 'Floating hearts'], ['grain', 'Film grain']].map(function (x) { return '<button class="chip pbtn" type="button" data-fx="' + x[0] + '" aria-pressed="' + !!e[x[0]] + '">' + x[1] + ' · ' + (e[x[0]] ? 'On' : 'Off') + '</button>'; }).join('') + '</div>' +
+      '<div class="rng" style="margin-top:14px"><div class="rh"><span>How strong the effects are</span><span class="rd" data-rd="intensity">' + e.intensity + ' of 5</span></div><input type="range" min="1" max="5" step="1" data-fxn value="' + e.intensity + '" aria-label="Effect strength"></div>' +
+      '<div class="rec" style="margin-top:14px"><div class="rec-h"><b>Page animations</b><button class="chip pbtn" type="button" data-fxanim aria-pressed="' + (e.animations !== false) + '">' + (e.animations !== false ? 'On' : 'Off (everything stays still)') + '</button></div><div class="rec-m">The sliding and fading as sections appear. Turn off for a calm, fast site.</div></div></div>' +
+      '<div class="card"><button class="btn danger" type="button" data-threset>' + (S.armed === 'thr' ? 'Tap again to reset the whole look' : 'Reset to the original look') + '</button></div>';
+  }
+  // The little sample box follows every change at once, without redrawing the form (so a slider is not interrupted).
+  function thPreview() {
+    var el = $('#thPrev'); if (!el) return;
+    var t = thv(), e = efv(), radius = t.radius + 'px';
+    var font = { clean: 'system-ui,sans-serif', serif: 'Georgia,serif', rounded: "ui-rounded,'Trebuchet MS',sans-serif", mono: 'ui-monospace,Menlo,monospace' }[t.font] || "'Bebas Neue','Arial Narrow',Impact,sans-serif";
+    el.style.background = t.bg; el.style.color = t.text; el.style.fontFamily = font; el.style.borderRadius = radius;
+    var b = el.querySelector('b'); b.style.color = t.accent; b.textContent = (t.title || 'E Daniel').toUpperCase();
+    var pc = el.querySelector('.pc'); pc.style.borderRadius = radius;
+    pc.style.background = t.card === 'outline' ? 'transparent' : t.card === 'glass' ? 'rgba(128,128,128,.18)' : 'rgba(128,128,128,.12)';
+    pc.style.borderColor = t.card === 'outline' ? t.accent : 'rgba(128,128,128,.3)'; pc.style.boxShadow = t.card === 'flat' || t.card === 'outline' ? 'none' : '0 8px 20px rgba(0,0,0,.3)';
+    el.querySelector('.pb').style.background = t.accent;
+    var w = $('#thWarn'), r = contrast(t.bg, t.text);
+    if (w) { w.hidden = r >= 4.5; w.textContent = r >= 4.5 ? '' : 'The text is hard to read on this background. Choose a lighter text colour or a darker background.'; }
+    var tb = $('#thPrev'); if (tb) tb.style.opacity = '1';
+    void e;
+  }
+
+  /* ---------- Voice and sound ---------- */
+  var VO0 = { pitch: 1.25, rate: 1.04, lang: '', hint: '', robot: true, pets: true, clicks: true };
+  var VLANGS = [['', 'The language the visitor chose'], ['en-IN', 'English (India)'], ['en-US', 'English (US)'], ['en-GB', 'English (UK)'], ['ta-IN', 'Tamil'], ['kn-IN', 'Kannada'], ['hi-IN', 'Hindi'], ['te-IN', 'Telugu']];
+  function vv() { return Object.assign({}, VO0, S.voice || {}); }
+  function vset() { if (!S.voice) S.voice = Object.assign({}, VO0); return S.voice; }
+  function voiceHTML() {
+    var v = vv(), row = function (key, name, note) { return '<div class="rec"><div class="rec-h"><b>' + name + '</b><button class="chip pbtn" type="button" data-von="' + key + '" aria-pressed="' + (v[key] !== false) + '">' + (v[key] !== false ? 'On' : 'Off') + '</button></div><div class="rec-m">' + note + '</div></div>'; };
+    return '<div class="card"><h2>Voice and sound</h2><p class="sub">What visitors hear by default. They can still switch things off on their own phone. Voices come from each visitor’s phone, so the exact voice can differ from device to device.</p></div>' +
+      '<div class="recs">' + row('robot', 'Robot voice', 'The assistant speaks its answers aloud when a visitor opens the chat.') + row('pets', 'Pet sounds', 'Roars, barks, fire and the pets’ own voices.') + row('clicks', 'Click and tap sounds', 'Tiny sounds on buttons and when pages open.') + '</div>' +
+      '<div class="card"><h2>How the robot sounds</h2><div style="display:grid;gap:16px;margin-top:12px">' +
+      '<div class="rng"><div class="rh"><span>Pitch (low to high)</span><span class="rd" data-rd="pitch">' + v.pitch.toFixed(2) + '</span></div><input type="range" min="0.5" max="2" step="0.05" data-vo="pitch" value="' + v.pitch + '" aria-label="Voice pitch"></div>' +
+      '<div class="rng"><div class="rh"><span>Speed (slow to fast)</span><span class="rd" data-rd="rate">' + v.rate.toFixed(2) + '</span></div><input type="range" min="0.6" max="1.5" step="0.02" data-vo="rate" value="' + v.rate + '" aria-label="Voice speed"></div>' +
+      '<label class="field">Language of the voice<select data-vo="lang">' + VLANGS.map(function (l) { return '<option value="' + l[0] + '"' + (v.lang === l[0] ? ' selected' : '') + '>' + l[1] + '</option>'; }).join('') + '</select></label>' +
+      '<label class="field">Preferred voice name (optional)<input type="text" data-vo="hint" maxlength="40" placeholder="For example Google, Female or Heera" value="' + esc(v.hint) + '"><span class="hint">If a phone has a voice with this word in its name, it is used. Otherwise the phone’s normal voice speaks.</span></label>' +
+      '<div class="rec-a"><button class="btn primary" type="button" data-vtest>Hear a sample</button><button class="btn" type="button" data-vreset>' + (S.armed === 'vr' ? 'Tap again to reset' : 'Use the original voice') + '</button></div><p class="sub" id="voSt"></p></div></div>';
+  }
+  function voiceSample() {
+    var st = $('#voSt'), v = vv();
+    if (!('speechSynthesis' in window)) { st.textContent = 'This browser cannot speak. Try Chrome or Brave on your phone.'; return; }
+    var go = function () {
+      var list = speechSynthesis.getVoices(), u = new SpeechSynthesisUtterance(v.lang && /^en/.test(v.lang) ? 'Beep-boop! Hello, I am the assistant. How do I sound?' : 'Hello, I am the assistant. How do I sound?'), pick = null;
+      if (v.lang) { u.lang = v.lang; pick = list.filter(function (x) { return x.lang && x.lang.toLowerCase().replace('_', '-').indexOf(v.lang.toLowerCase().slice(0, 2)) === 0; })[0] || null; }
+      if (v.hint) { var h = list.filter(function (x) { return x.name.toLowerCase().indexOf(v.hint.toLowerCase()) > -1; })[0]; if (h) pick = h; }
+      if (pick) u.voice = pick;
+      u.pitch = v.pitch; u.rate = v.rate; speechSynthesis.cancel(); speechSynthesis.speak(u);
+      st.textContent = pick ? 'Playing with the voice “' + pick.name + '”.' : (v.hint ? 'No voice with “' + v.hint + '” in its name on this phone, so the normal voice is playing.' : 'Playing with the phone’s normal voice.');
+    };
+    if (speechSynthesis.getVoices().length) go(); else { speechSynthesis.onvoiceschanged = function () { speechSynthesis.onvoiceschanged = null; go(); }; setTimeout(go, 600); }
+  }
+
+  /* ---------- Music ---------- */
+  var M0 = { on: true, volume: 0.6, tracks: [] }, AUDIO_MAX = 5 * 1024 * 1024, TRACK_MAX = 12;
+  var AUDIO_TYPES = { mp3: 'audio/mpeg', m4a: 'audio/mp4', aac: 'audio/aac', ogg: 'audio/ogg', wav: 'audio/wav', weba: 'audio/webm', webm: 'audio/webm' };
+  var prevAudio = null;
+  function mv() { return Object.assign({}, M0, S.music || {}, { tracks: ((S.music && S.music.tracks) || []) }); }
+  function mset() { if (!S.music) S.music = clone(M0); return S.music; }
+  function musicHTML() {
+    var m = mv();
+    return '<div class="card"><h2>Music on the website</h2><p class="sub">Add songs from your phone. Visitors see a small round ♪ button. When they tap it, the songs play one after another. Music never starts by itself, because phones do not allow that. Use only music you have the right to share.</p>' +
+      '<div style="display:grid;gap:14px;margin-top:12px"><div class="chips"><button class="chip pbtn" type="button" data-mon aria-pressed="' + (m.on !== false) + '">' + (m.on !== false ? 'Showing the music button' : 'Music button hidden') + '</button></div>' +
+      '<div class="rng"><div class="rh"><span>Starting volume</span><span class="rd" data-rd="volume">' + Math.round(m.volume * 100) + ' %</span></div><input type="range" min="0" max="100" step="5" data-mvol value="' + Math.round(m.volume * 100) + '" aria-label="Starting volume"></div>' +
+      '<div><label class="btn primary" style="cursor:pointer">Add songs from my phone<input type="file" accept="audio/*" multiple hidden data-mup></label></div>' +
+      '<p class="sub" id="muSt">' + m.tracks.length + ' of ' + TRACK_MAX + ' songs. Each song up to 5 MB. MP3 or M4A is best. If a song is bigger, save a shorter or smaller copy first.</p></div></div>' +
+      '<div class="recs">' + (m.tracks.length ? m.tracks.map(function (t, i) {
+        return '<div class="rec mrow" data-mi="' + i + '"><label class="field">Song name shown to visitors<input type="text" data-mt maxlength="60" value="' + esc(t.title) + '"></label><div class="rec-a">' +
+          '<button class="btn sm pbtn" type="button" data-mprev>' + (S.play === i ? '⏸ Stop' : '▶ Play') + '</button><button class="btn sm pbtn" type="button" data-mup1 aria-label="Move up"' + (i === 0 ? ' disabled' : '') + '>↑</button><button class="btn sm pbtn" type="button" data-mdown aria-label="Move down"' + (i === m.tracks.length - 1 ? ' disabled' : '') + '>↓</button>' +
+          '<button class="btn sm danger pbtn" type="button" data-mdel>' + (S.armed === 'm' + i ? 'Tap again to remove' : 'Remove') + '</button></div></div>';
+      }).join('') : '<p class="empty">No songs yet. Tap “Add songs from my phone”.</p>') + '</div>';
+  }
+  function stopPrev() { if (prevAudio) { prevAudio.pause(); prevAudio = null; } S.play = -1; }
+  function uploadSongs(files) {
+    var st = $('#muSt'), m = mset(), q = Array.prototype.slice.call(files), added = 0, errs = [];
+    S.busy = true;
+    var next = function () {
+      var f = q.shift();
+      if (!f) {
+        S.busy = false; if (added) { mark(); A.toast(added + (added === 1 ? ' song' : ' songs') + ' added. Publish to put ' + (added === 1 ? 'it' : 'them') + ' on the site.'); }
+        render(); var s2 = $('#muSt'); if (s2 && errs.length) s2.textContent = errs.join(' '); return;
+      }
+      if (m.tracks.length >= TRACK_MAX) { errs.push('You can have up to ' + TRACK_MAX + ' songs. Remove one first.'); q.length = 0; return next(); }
+      var ext = (f.name.split('.').pop() || '').toLowerCase(), type = /^audio\//.test(f.type) && f.type !== 'audio/x-mpegurl' ? f.type : (AUDIO_TYPES[ext] || '');
+      if (!type) { errs.push('“' + f.name + '” is not a song file. Use MP3, M4A, AAC, OGG or WAV.'); return next(); }
+      if (f.size > AUDIO_MAX) { errs.push('“' + f.name + '” is ' + (f.size / 1048576).toFixed(1) + ' MB. The limit is 5 MB. Save a shorter or smaller copy and try again.'); return next(); }
+      if (st) st.textContent = 'Sending “' + f.name + '”… please wait.';
+      A.upload(new Blob([f], { type: type })).then(function (r) {
+        m.tracks.push({ title: f.name.replace(/\.[^.]+$/, '').replace(/[_]+/g, ' ').trim().slice(0, 60) || 'Song', url: r.url }); added++; next();
+      }).catch(function (er) { errs.push('“' + f.name + '”: ' + er.message); next(); });
+    };
+    next();
+  }
+
+  /* ---------- Pets ---------- */
+  var BUILTIN_PETS = [['lion', '🦁', 'Lion', 'Savannah guard'], ['dragon', '🐉', 'Dragon', 'Cave guard'], ['turtle', '🐢', 'Turtle', 'Lagoon guard'], ['husky', '🐕', 'Husky', 'Snow guard']];
+  var PET_VOICES = [['deep', 'Deep and slow'], ['high', 'High and bright'], ['slow', 'Very slow'], ['fast', 'Fast and playful']];
+  function pv() { var p = S.pets || {}; return { off: Array.isArray(p.off) ? p.off : [], custom: Array.isArray(p.custom) ? p.custom : [] }; }
+  function pset() { if (!S.pets) S.pets = { off: [], custom: [] }; S.pets.off = S.pets.off || []; S.pets.custom = S.pets.custom || []; return S.pets; }
+  function petsHTML() {
+    var p = pv();
+    return '<div class="card"><h2>Guard pets</h2><p class="sub">Visitors choose a guard in the robot’s menu. Switch a guard off to hide it from the menu. You can switch it back on any time.</p></div><div class="recs">' +
+      BUILTIN_PETS.map(function (b) { var on = p.off.indexOf(b[0]) < 0; return '<div class="rec"><div class="rec-h"><div class="prow"><span style="font-size:30px" aria-hidden="true">' + b[1] + '</span><div class="tx"><b>' + b[2] + '</b><div class="rec-m">' + b[3] + '</div></div></div><button class="chip pbtn" type="button" data-poff="' + b[0] + '" aria-pressed="' + on + '">' + (on ? 'Showing' : 'Hidden') + '</button></div></div>'; }).join('') + '</div>' +
+      '<div class="card"><h2>Alternate pets</h2><p class="sub">Add your own pet from a picture on your phone. A picture with a see-through background (PNG) looks best. Up to 8 pets.</p><div style="margin-top:12px"><button class="btn primary" type="button" data-padd>Add an alternate pet</button></div></div>' +
+      '<div class="recs">' + (p.custom.length ? p.custom.map(function (c, i) {
+        return '<div class="rec" data-pi="' + i + '"><div class="prow"><img class="pimg" src="' + esc(src(c.img)) + '" alt="" onerror="this.style.visibility=\'hidden\'"><div class="tx"><b>' + esc(c.name) + '</b><div class="rec-m">' + esc(c.hello || 'No hello line') + ' · ' + esc((PET_VOICES.filter(function (v) { return v[0] === c.voice; })[0] || PET_VOICES[0])[1]) + '</div></div></div>' +
+          '<div class="rec-a"><button class="btn sm pbtn" type="button" data-pedit>Edit</button><button class="btn sm danger pbtn" type="button" data-pdel>' + (S.armed === 'pc' + i ? 'Tap again to remove' : 'Remove') + '</button></div></div>';
+      }).join('') : '<p class="empty">No alternate pets yet.</p>') + '</div>';
+  }
+  /* A pet picture is shrunk to 512 px. PNG and WebP keep their see-through background. Pictures over 2 MB are refused. */
+  function shrinkPet(file) {
+    return new Promise(function (res, rej) {
+      if (!/^image\/(png|jpeg|webp)$/.test(file.type)) return rej(new Error('Please choose a PNG, JPG or WebP picture.'));
+      if (file.size > 2 * 1048576) return rej(new Error('That picture is ' + (file.size / 1048576).toFixed(1) + ' MB. Pet pictures must be under 2 MB.'));
+      var url = URL.createObjectURL(file), im = new Image();
+      im.onload = function () {
+        var r = Math.min(1, 512 / Math.max(im.width, im.height)), c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(im.width * r)); c.height = Math.max(1, Math.round(im.height * r));
+        c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+        var keep = file.type === 'image/jpeg' ? 'image/jpeg' : 'image/webp';
+        c.toBlob(function (b) {
+          if (b && b.type === keep) { URL.revokeObjectURL(url); return res(b); }
+          c.toBlob(function (b2) { URL.revokeObjectURL(url); b2 ? res(b2) : rej(new Error('Could not read that picture.')); }, file.type === 'image/jpeg' ? 'image/jpeg' : 'image/png');
+        }, keep, 0.92);
+      };
+      im.onerror = function () { URL.revokeObjectURL(url); rej(new Error('Could not read that picture.')); };
+      im.src = url;
+    });
+  }
+  function openPetSheet(idx) {
+    var isNew = idx < 0, it = isNew ? { id: rid(), name: '', img: '', hello: '', voice: 'deep' } : clone(pv().custom[idx]);
+    $('#sheetHost').innerHTML = '<div class="sheet-bg" id="bg"><form class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="' + (isNew ? 'Add' : 'Edit') + ' an alternate pet" novalidate><h2>' + (isNew ? 'Add an alternate pet' : 'Edit this pet') + '</h2>' +
+      '<label class="field">Name *<input id="pn" type="text" maxlength="24" value="' + esc(it.name) + '" placeholder="For example Bruno"></label>' +
+      '<div class="field">Picture *<div class="up"><img id="pi_img" alt="" src="' + esc(src(it.img)) + '" onerror="this.style.visibility=\'hidden\'" onload="this.style.visibility=\'visible\'"><label class="btn sm" style="cursor:pointer">Choose from phone<input type="file" accept="image/png,image/jpeg,image/webp" id="pf" hidden></label></div><span class="hint" id="pi_h">PNG, JPG or WebP, under 2 MB. It is shrunk to a small size before it is sent.</span></div>' +
+      '<label class="field">Hello line<input id="ph" type="text" maxlength="80" value="' + esc(it.hello) + '" placeholder="What it says when it arrives"></label>' +
+      '<label class="field">Voice style<select id="pv">' + PET_VOICES.map(function (v) { return '<option value="' + v[0] + '"' + (it.voice === v[0] ? ' selected' : '') + '>' + v[1] + '</option>'; }).join('') + '</select></label>' +
+      '<p class="msg bad" id="sMsg"></p><div class="acts"><button class="btn primary" type="submit">' + (isNew ? 'Add the pet' : 'Done') + '</button><button class="btn" type="button" data-close>Cancel</button></div></form></div>';
+    var sheet = $('#sheet'), pending = false; $('#pn').focus({ preventScroll: true });
+    sheet.addEventListener('click', function (e) { if (e.target.closest('[data-close]')) $('#sheetHost').innerHTML = ''; });
+    sheet.addEventListener('change', function (e) {
+      if (e.target.id !== 'pf' || !e.target.files[0]) return;
+      var h = $('#pi_h'); h.textContent = 'Preparing the picture…'; pending = true;
+      shrinkPet(e.target.files[0]).then(function (b) { h.textContent = 'Sending…'; return A.upload(b); }).then(function (r) { it.img = r.url; $('#pi_img').src = r.url; h.textContent = A.demo ? 'Preview only. The picture is not stored.' : 'Uploaded.'; })
+        .catch(function (er) { h.textContent = er.message; }).then(function () { pending = false; });
+    });
+    sheet.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var name = $('#pn').value.trim(); if (!name) { $('#sMsg').textContent = 'Please give the pet a name.'; return; }
+      if (pending) { $('#sMsg').textContent = 'Wait a moment. The picture is still being sent.'; return; }
+      if (!it.img) { $('#sMsg').textContent = 'Please choose a picture for the pet.'; return; }
+      it.name = name; it.hello = $('#ph').value.trim(); it.voice = $('#pv').value;
+      var P0 = pset(); if (isNew) { if (P0.custom.length >= 8) { $('#sMsg').textContent = 'You can have up to 8 alternate pets.'; return; } P0.custom.push(it); } else P0.custom[idx] = it;
+      $('#sheetHost').innerHTML = ''; mark(); render(); A.toast(isNew ? 'Pet added. Publish to show it on the site.' : 'Updated. Publish to put it on the site.');
+    });
+  }
+
+
+  /* ---------- Letters and words ---------- */
+  function wv() { return S.words || { tagline: B.words.tagline || '', summary: B.words.summary || '', thanks: B.words.thanks || '', about: (B.words.about || []).slice() }; }
+  function wset() { if (!S.words) S.words = clone(wv()); return S.words; }
+  function wordsHTML() {
+    var w = wv();
+    return '<div class="card"><h2>Letters and words on the site</h2><p class="sub">The short lines and paragraphs visitors read. Change them here and press Save and publish. Poems and stories have their own tabs.</p>' + (S.words ? '' : '<p class="sub">Showing what is on the site now.</p>') +
+      '<div style="display:grid;gap:12px;margin-top:12px"><label class="field">Tagline under your name<input data-wf="tagline" maxlength="160" value="' + esc(w.tagline) + '"></label>' +
+      '<label class="field">Summary, used in the downloaded bio<textarea data-wf="summary" rows="5" maxlength="900">' + esc(w.summary) + '</textarea></label></div></div>' +
+      '<div class="card"><h2>About letter</h2><p class="sub">Each box is one paragraph in the About window.</p><div style="display:grid;gap:12px;margin-top:12px">' +
+      w.about.map(function (t, i) { return '<label class="field">Paragraph ' + (i + 1) + '<textarea data-wa="' + i + '" rows="4" maxlength="600">' + esc(t) + '</textarea></label>'; }).join('') +
+      '<div class="rec-a"><button class="btn sm" type="button" data-wadd>Add a paragraph</button>' + (w.about.length > 1 ? '<button class="btn sm danger" type="button" data-wdel>' + (S.armed === 'wdel' ? 'Tap again to remove the last one' : 'Remove the last paragraph') + '</button>' : '') + '</div></div></div>' +
+      '<div class="card"><h2>Thank-you letter</h2><p class="sub">Shown at the very end of the page.</p><label class="field" style="margin-top:12px">Message<textarea data-wf="thanks" rows="3" maxlength="400">' + esc(w.thanks) + '</textarea></label></div>';
+  }
+
+  /* ---------- Collaboration and visitor forms ---------- */
+  function cv() { return S.collab || COLLAB0; }
+  function cset() { if (!S.collab) S.collab = clone(COLLAB0); return S.collab; }
+  function fv() { return S.forms || FORMS0; }
+  var FORM_ROWS = [['bioAsk', 'When someone downloads the bio', 'Asks who they are before the download.'], ['bioRequire', 'Bio download: name, company, phone and email are required', 'On: the download only starts after those four are filled in. Age, gender, place and links stay optional. Off: everything is optional and they can skip it.'], ['hireAsk', 'When someone taps “Let’s create”', 'Asks who they are before opening WhatsApp.'], ['hireRequire', 'Hire message: name, company, phone and email are required', 'On: WhatsApp opens after those four are filled in. Off: everything is optional and they can skip it.'], ['shareAsk', 'After someone shares the portfolio', 'Thanks them and asks who they are. They can skip it.'], ['robotAsk', 'The robot asks for a number or email', 'After a few answers, or when someone says thanks or bye.']];
+  function collabHTML() {
+    var k = cv();
+    return '<div class="card"><h2>Collaboration section</h2><p class="sub">A section on the website where people can propose a collaboration, get updates or contribute. Their answers arrive on the People tab of your dashboard.</p><div style="display:grid;gap:12px;margin-top:12px">' +
+      '<div class="chips"><button class="chip" type="button" data-con aria-pressed="' + (k.on !== false) + '">' + (k.on !== false ? 'Showing on the website' : 'Hidden from the website') + '</button></div>' +
+      '<label class="field">Heading<input data-cf="title" maxlength="80" value="' + esc(k.title) + '"></label>' +
+      '<label class="field">Introduction<textarea data-cf="intro" rows="3" maxlength="500">' + esc(k.intro) + '</textarea></label>' +
+      '<label class="field">Small line under the buttons (optional)<input data-cf="note" maxlength="300" value="' + esc(k.note || '') + '"></label></div></div>' +
+      '<div class="card"><h2>Kinds of collaboration</h2><p class="sub">Each one shows as a card.</p></div><div class="recs">' + k.items.map(function (x, i) {
+        return '<div class="rec" data-ci="' + i + '"><label class="field">Title<input data-ci-f="title" maxlength="80" value="' + esc(x.title) + '"></label><label class="field">Details<input data-ci-f="note" maxlength="240" value="' + esc(x.note) + '"></label><div class="rec-a"><button class="btn sm danger" type="button" data-cidel="' + i + '">' + (S.armed === 'ci' + i ? 'Tap again to delete' : 'Delete') + '</button></div></div>';
+      }).join('') + '</div><button class="btn" type="button" data-ciadd>Add a kind of collaboration</button>' +
+      '<div class="card"><h2>Questions to visitors</h2><p class="sub">These ask a visitor who they are, so your Audience tab has ages, gender and places. The bio download and hire forms ask for name, company, phone and email, and you can switch that off. Everything else is optional, and anyone under 18 is never asked for contact details. Switch off any you do not want.</p><div class="recs" style="margin-top:12px">' +
+      FORM_ROWS.map(function (r) { var on = fv()[r[0]] !== false; return '<div class="rec"><div class="rec-h"><b>' + esc(r[1]) + '</b><button class="chip" type="button" data-fon="' + r[0] + '" aria-pressed="' + on + '">' + (on ? 'On' : 'Off') + '</button></div><div class="rec-m">' + esc(r[2]) + '</div></div>'; }).join('') + '</div></div>';
+  }
+
+  /* ---------- Social links ---------- */
+  var QUICK = ['Telegram', 'LinkedIn', 'X', 'Threads', 'Pinterest', 'Behance', 'Discord', 'GitHub', 'Reddit', 'Twitch', 'Spotify', 'Website'];
+  function socialHTML() {
+    return '<div class="card"><h2>Add a social network</h2><p class="sub">Tap one to add it. It shows on the website with its own button, in the Follow section and in the contact list.</p><div class="chips" style="margin-top:12px">' +
+      QUICK.map(function (q) { return '<button class="chip" type="button" data-quick="' + esc(q) + '">+ ' + esc(q) + '</button>'; }).join('') + '</div></div>' + listHTML('socials');
+  }
+
+  /* ---------- Language ---------- */
+  function langHTML() {
+    var lang = S.lang, src = (B.i18n || {})[lang] || {}, mine = S.i18n[lang] || {}, q = S.lq.trim().toLowerCase();
+    var keys = Object.keys(src).filter(function (k) { return !q || k.toLowerCase().indexOf(q) > -1 || String(mine[k] || src[k]).toLowerCase().indexOf(q) > -1; });
+    var show = S.langAll || q ? keys.slice(0, 200) : keys.slice(0, 30);
+    return '<div class="card"><h2>Language</h2><p class="sub">The robot and the buttons speak these languages. Change any line below to fix a translation, then press Save and publish. The English words on the left stay the same.</p>' +
+      '<div class="chips" style="margin-top:12px">' + LANGS.map(function (l) { return '<button class="chip" type="button" data-lang="' + l[0] + '" aria-pressed="' + (S.lang === l[0]) + '">' + l[1] + ' ' + Object.keys(S.i18n[l[0]] || {}).length + '</button>'; }).join('') + '</div>' +
+      '<label class="field" style="margin-top:12px">Search<input id="langQ" type="search" placeholder="Find a phrase in English or ' + esc(LANGS.filter(function (l) { return l[0] === lang; })[0][1]) + '" value="' + esc(S.lq) + '"></label>' +
+      '<p class="sub" id="langCount" style="margin-top:8px">' + Object.keys(mine).length + ' changed by you · showing ' + show.length + ' of ' + keys.length + '</p></div>' +
+      '<div class="recs" id="langList">' + show.map(function (k) {
+        var cur = mine[k] || src[k], ch = !!mine[k];
+        return '<div class="rec"><div class="rec-m"><b>' + esc(k) + '</b></div><label class="field">' + esc(LANGS.filter(function (l) { return l[0] === lang; })[0][1]) + (ch ? ' · changed' : '') + '<textarea data-lk="' + esc(k) + '" rows="2" maxlength="500">' + esc(cur) + '</textarea></label>' + (ch ? '<div class="rec-a"><button class="btn sm" type="button" data-lundo="' + esc(k) + '">Undo my change</button></div>' : '') + '</div>';
+      }).join('') + '</div>' + (!S.langAll && !q && keys.length > 30 ? '<button class="btn" type="button" data-lall>Show all ' + keys.length + '</button>' : '');
+  }
+
+  /* ---------- Daily updates ---------- */
+  function dailyHTML() {
+    return '<div class="card"><h2>Add today’s update</h2><p class="sub">The newest update shows at the top of the website. Older ones sit under “Earlier updates”.</p>' +
+      '<form id="dForm" style="display:grid;gap:12px;margin-top:12px" novalidate><label class="field">What is new?<textarea id="dText" maxlength="280" rows="2" placeholder="e.g. New reel for a Bengaluru cafe is live"></textarea></label>' +
+      '<div class="row2"><label class="field">Date<input id="dDate" type="date" value="' + today() + '"></label><label class="field">Link (optional)<input id="dLink" type="url" placeholder="https://"></label></div>' +
+      '<button class="btn primary" type="submit">Add update</button></form></div>' +
+      '<div class="recs">' + (S.daily.length ? S.daily.map(function (d, i) {
+        return '<div class="rec" data-i="' + i + '"><label class="field">Update<textarea data-df="text" maxlength="280" rows="2">' + esc(d.text) + '</textarea></label><div class="row2"><label class="field">Date<input data-df="date" type="date" value="' + esc(d.date) + '"></label><label class="field">Link<input data-df="link" type="url" value="' + esc(d.link || '') + '"></label></div>' +
+          '<div class="rec-a"><button class="btn sm danger" type="button" data-ddel="' + i + '">' + (S.armed === 'd' + i ? 'Tap again to delete' : 'Delete') + '</button></div></div>';
+      }).join('') : '<p class="empty">No updates yet. Add your first one above.</p>') + '</div>';
+  }
+
+  /* ---------- Children's help ---------- */
+  var KINDS = [['books', 'Books'], ['toys', 'Toys'], ['food', 'Food'], ['clothes', 'Clothes'], ['other', 'Other']];
+  function helpHTML() {
+    var h = S.help;
+    return '<div class="card"><h2>Books and toys for children</h2><p class="sub">This section appears near the bottom of the website. Visitors can pledge what they can give, and you see each pledge on the dashboard.</p>' +
+      '<div style="display:grid;gap:12px;margin-top:12px">' +
+      '<div class="chips"><button class="chip" type="button" data-hon aria-pressed="' + (h.on !== false) + '">' + (h.on !== false ? 'Showing on the website' : 'Hidden from the website') + '</button></div>' +
+      '<label class="field">Heading<input data-hf="title" maxlength="80" value="' + esc(h.title) + '"></label>' +
+      '<label class="field">Introduction<textarea data-hf="intro" rows="4" maxlength="600">' + esc(h.intro) + '</textarea></label>' +
+      '<label class="field">Small print under the form<input data-hf="note" maxlength="400" value="' + esc(h.note) + '"></label></div></div>' +
+      '<div class="card"><h2>Drop-off address</h2><p class="sub">Choose carefully. A home address on a public website can bring unwanted visitors.</p><div style="display:grid;gap:12px;margin-top:12px">' +
+      '<label class="field">Who can see the address<select data-hf="dropMode"><option value="hidden"' + (h.dropMode === 'hidden' ? ' selected' : '') + '>Nobody. I message each person myself (safest)</option><option value="after"' + (h.dropMode === 'after' ? ' selected' : '') + '>Shown only after someone sends a pledge</option><option value="public"' + (h.dropMode === 'public' ? ' selected' : '') + '>Shown to everyone on the website</option></select></label>' +
+      '<label class="field">Address<textarea data-hf="address" rows="2" maxlength="300" placeholder="Where donations can be dropped off">' + esc(h.address) + '</textarea></label>' +
+      '<label class="field">Drop-off hours<input data-hf="hours" maxlength="80" placeholder="e.g. Sat and Sun, 10 am to 6 pm" value="' + esc(h.hours) + '"></label></div></div>' +
+      '<div class="card"><h2>What the children need</h2><p class="sub">Set a target and update how many you have received. A progress bar shows on the website.</p></div>' +
+      '<div class="recs">' + h.needs.map(function (n, i) {
+        return '<div class="rec" data-ni="' + i + '"><div class="row2"><label class="field">Type<select data-nf="kind">' + KINDS.map(function (k) { return '<option value="' + k[0] + '"' + (n.kind === k[0] ? ' selected' : '') + '>' + k[1] + '</option>'; }).join('') + '</select></label><label class="field">Name<input data-nf="title" maxlength="80" value="' + esc(n.title) + '"></label></div>' +
+          '<label class="field">Details<input data-nf="note" maxlength="240" value="' + esc(n.note) + '"></label><div class="row2"><label class="field">Received so far<input data-nf="have" type="number" inputmode="numeric" min="0" value="' + n.have + '"></label><label class="field">Target<input data-nf="need" type="number" inputmode="numeric" min="0" value="' + n.need + '"></label></div>' +
+          '<div class="rec-a"><button class="btn sm" type="button" data-nplus="' + i + '">+1 received</button><button class="btn sm danger" type="button" data-ndel="' + i + '">' + (S.armed === 'n' + i ? 'Tap again to delete' : 'Delete') + '</button></div></div>';
+      }).join('') + '</div><button class="btn" type="button" data-nadd>Add a need</button>' +
+      '<div class="card"><h2>What reached the children</h2><p class="sub">Short notes about what was delivered. They show under the section on the website.</p>' +
+      '<form id="sForm" style="display:grid;gap:12px;margin-top:12px" novalidate><label class="field">Note<input id="sText" maxlength="400" placeholder="e.g. 40 story books reached the home in Hosur"></label><div class="row2"><label class="field">Date<input id="sDate" type="date" value="' + today() + '"></label></div><button class="btn primary" type="submit">Add note</button></form></div>' +
+      '<div class="recs">' + h.stories.map(function (s, i) { return '<div class="rec"><div class="rec-m"><b>' + esc(s.date) + '</b> · ' + esc(s.text) + '</div><div class="rec-a"><button class="btn sm danger" type="button" data-sdel="' + i + '">' + (S.armed === 's' + i ? 'Tap again to delete' : 'Delete') + '</button></div></div>'; }).join('') + '</div>';
+  }
+
+  /* ---------- Lists of reels, photos and so on ---------- */
+  var src = function (v) { v = String(v || ''); return /^(https?:|\/|data:|blob:)/.test(v) ? v : (v ? '../' + v : ''); };
+  function listHTML(k) {
+    var L = LISTS[k], items = S.lists[k] === null ? base(k) : S.lists[k];
+    var using = S.lists[k] === null ? '<p class="sub">Showing what is on the site now. Change anything below and publish to replace it.</p>' : '<p class="sub">Your saved list. Items show on the site in this order.</p>';
+    return '<div class="card"><h2>' + esc(L.label) + ' · ' + items.length + '</h2>' + using + '<div style="margin-top:12px"><button class="btn primary" type="button" data-add>Add a ' + esc(L.noun) + '</button></div></div><div class="recs">' + (items.length ? items.map(function (x, i) {
+      var th = L.thumb ? src(x[L.thumb]) : '';
+      return '<div class="item" data-i="' + i + '">' + (th ? '<img class="thumb" src="' + esc(th) + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">' : '') + '<div class="tx"><b>' + esc(x.title || x.name || x.label || 'Untitled') + '</b><span>' + esc(L.sub(x)) + '</span></div><div class="ctl"><button class="ib" type="button" data-up aria-label="Move up"' + (i === 0 ? ' disabled' : '') + '>↑</button><button class="ib" type="button" data-down aria-label="Move down"' + (i === items.length - 1 ? ' disabled' : '') + '>↓</button><button class="btn sm" type="button" data-edit>Edit</button><button class="btn sm danger" type="button" data-del>' + (S.armed === 'l' + k + i ? 'Sure?' : 'Delete') + '</button></div></div>';
+    }).join('') : '<p class="empty">Nothing in this list. Add the first one.</p>') + '</div>';
+  }
+
+  /* ---------- the form sheet ---------- */
+  function openSheet(k, idx, preset) {
+    var L = LISTS[k], isNew = idx < 0, it = isNew ? Object.assign(L.blank(), preset || {}) : clone(list(k)[idx]);
+    var f = L.fields.map(function (fd) {
+      var v = it[fd.k] == null ? '' : it[fd.k], id = 'f_' + fd.k, lab = esc(fd.l) + (fd.req ? ' *' : '');
+      if (fd.t === 'area') return '<label class="field">' + lab + '<textarea id="' + id + '" rows="' + (fd.rows || 3) + '">' + esc(v) + '</textarea></label>';
+      if (fd.t === 'select') return '<label class="field">' + lab + '<select id="' + id + '">' + fd.o.map(function (o) { return '<option value="' + o[0] + '"' + (v === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>';
+      if (fd.t === 'tags') return '<div class="field">' + lab + '<div class="chips" id="' + id + '">' + TAGS.map(function (t) { return '<button type="button" class="chip" data-tag="' + t[0] + '" aria-pressed="' + ((v || []).indexOf(t[0]) > -1) + '">' + t[1] + '</button>'; }).join('') + '</div></div>';
+      if (fd.t === 'image') return '<div class="field">' + lab + '<div class="up"><img id="' + id + '_img" alt="" src="' + esc(src(v)) + '" onerror="this.style.visibility=\'hidden\'" onload="this.style.visibility=\'visible\'"><label class="btn sm" style="cursor:pointer">Choose from phone<input type="file" accept="image/*" data-up="' + fd.k + '" hidden></label></div><input id="' + id + '" type="text" value="' + esc(v) + '" placeholder="Picture path or link"><span class="hint" id="' + id + '_h">A picture is shrunk to a web size before it is sent.</span></div>';
+      return '<label class="field">' + lab + '<input id="' + id + '" type="text"' + (fd.dl ? ' list="' + fd.dl + '"' : '') + ' value="' + esc(v) + '">' + (fd.hint ? '<span class="hint">' + esc(fd.hint) + '</span>' : '') + '</label>';
+    }).join('');
+    $('#sheetHost').innerHTML = '<div class="sheet-bg" id="bg"><form class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="' + (isNew ? 'Add ' : 'Edit ') + esc(L.noun) + '" novalidate><h2>' + (isNew ? 'Add a ' : 'Edit this ') + esc(L.noun) + '</h2>' + f + '<p class="msg bad" id="sMsg"></p><div class="acts"><button class="btn primary" type="submit">' + (isNew ? 'Add to the list' : 'Done') + '</button><button class="btn" type="button" data-close>Cancel</button></div></form></div>';
+    var first = $('#sheet input[type=text], #sheet textarea'); if (first) first.focus({ preventScroll: true });
+    var sheet = $('#sheet');
+    sheet.addEventListener('click', function (e) {
+      if (e.target.closest('[data-close]')) { $('#sheetHost').innerHTML = ''; return; }
+      var t = e.target.closest('[data-tag]'); if (t) t.setAttribute('aria-pressed', String(t.getAttribute('aria-pressed') !== 'true'));
+    });
+    sheet.addEventListener('change', function (e) {
+      var u = e.target.closest('[data-up]'); if (!u || !u.files[0]) return;
+      var key = u.dataset.up, h = $('#f_' + key + '_h'); h.textContent = 'Preparing the picture…';
+      shrink(u.files[0]).then(function (blob) { h.textContent = 'Sending…'; return A.upload(blob); }).then(function (r) { $('#f_' + key).value = r.url; $('#f_' + key + '_img').src = r.url; h.textContent = A.demo ? 'Preview only. The picture is not stored.' : 'Uploaded. Save the item, then publish.'; })
+        .catch(function (er) { h.textContent = er.message; });
+    });
+    sheet.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var out = clone(it), bad = '';
+      L.fields.forEach(function (fd) {
+        var el = $('#f_' + fd.k);
+        if (fd.t === 'tags') out[fd.k] = Array.prototype.map.call(el.querySelectorAll('[aria-pressed=true]'), function (b) { return b.dataset.tag; });
+        else out[fd.k] = el.value.trim();
+        if (fd.req && !out[fd.k]) bad = 'Please fill in: ' + fd.l;
+      });
+      if (bad) { $('#sMsg').textContent = bad; return; }
+      var arr = list(k);
+      if (isNew) arr.unshift(out); else arr[idx] = out;
+      $('#sheetHost').innerHTML = ''; mark(); render(); A.toast(isNew ? 'Added. Publish to put it on the site.' : 'Updated. Publish to put it on the site.');
+    });
+  }
+  /* Shrinks a picture to at most 1600 px and sends it as JPEG, so a phone photo stays small. */
+  function shrink(file) {
+    return new Promise(function (res, rej) {
+      var url = URL.createObjectURL(file), im = new Image();
+      im.onload = function () {
+        var m = 1600, r = Math.min(1, m / Math.max(im.width, im.height)), c = document.createElement('canvas');
+        c.width = Math.round(im.width * r); c.height = Math.round(im.height * r);
+        c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+        c.toBlob(function (b) { URL.revokeObjectURL(url); b ? res(b) : rej(new Error('Could not read that picture.')); }, 'image/jpeg', 0.86);
+      };
+      im.onerror = function () { URL.revokeObjectURL(url); rej(new Error('Could not read that picture.')); };
+      im.src = url;
+    });
+  }
+
+  /* ---------- events on the panel ---------- */
+  var P = $('#panel');
+  P.addEventListener('click', function (e) {
+    var t = e.target, k = S.tab, row = t.closest('[data-i]'), i = row ? +row.dataset.i : -1;
+    if (LISTS[k]) {
+      if (t.closest('[data-add]')) return openSheet(k, -1);
+      if (t.closest('[data-edit]')) return openSheet(k, i);
+      var a = list(k);
+      if (t.closest('[data-up]') && i > 0) { a.splice(i - 1, 0, a.splice(i, 1)[0]); mark(); return render(); }
+      if (t.closest('[data-down]') && i < a.length - 1) { a.splice(i + 1, 0, a.splice(i, 1)[0]); mark(); return render(); }
+      if (t.closest('[data-del]')) { var key = 'l' + k + i; if (S.armed !== key) { S.armed = key; return render(); } S.armed = ''; a.splice(i, 1); mark(); render(); return A.toast('Removed. Publish to update the site.'); }
+    }
+    if (k === 'social') {
+      var qk = t.closest('[data-quick]'); if (qk) return openSheet('socials', -1, { label: qk.dataset.quick });
+      if (t.closest('[data-add]')) return openSheet('socials', -1);
+      var si = t.closest('.item'), sidx = si ? +si.dataset.i : -1, sa = list('socials');
+      if (t.closest('[data-edit]')) return openSheet('socials', sidx);
+      if (t.closest('[data-up]') && sidx > 0) { sa.splice(sidx - 1, 0, sa.splice(sidx, 1)[0]); mark(); return render(); }
+      if (t.closest('[data-down]') && sidx > -1 && sidx < sa.length - 1) { sa.splice(sidx + 1, 0, sa.splice(sidx, 1)[0]); mark(); return render(); }
+      if (t.closest('[data-del]')) { var sk = 'lsocials' + sidx; if (S.armed !== sk) { S.armed = sk; return render(); } S.armed = ''; sa.splice(sidx, 1); mark(); render(); return A.toast('Removed. Publish to update the site.'); }
+    }
+    if (k === 'words') {
+      if (t.closest('[data-wadd]')) { var w1 = wset(); w1.about.push(''); mark(); return render(); }
+      if (t.closest('[data-wdel]')) { if (S.armed !== 'wdel') { S.armed = 'wdel'; return render(); } S.armed = ''; wset().about.pop(); mark(); return render(); }
+    }
+    if (k === 'collab') {
+      if (t.closest('[data-con]')) { var c0 = cset(); c0.on = c0.on === false; mark(); return render(); }
+      if (t.closest('[data-ciadd]')) { cset().items.push({ id: rid(), title: 'New idea', note: '' }); mark(); return render(); }
+      var cd = t.closest('[data-cidel]'); if (cd) { var cn = +cd.dataset.cidel; if (S.armed !== 'ci' + cn) { S.armed = 'ci' + cn; return render(); } S.armed = ''; cset().items.splice(cn, 1); mark(); return render(); }
+      var fo = t.closest('[data-fon]'); if (fo) { if (!S.forms) S.forms = clone(FORMS0); S.forms[fo.dataset.fon] = S.forms[fo.dataset.fon] === false; mark(); return render(); }
+    }
+    if (k === 'lang') {
+      var lg = t.closest('[data-lang]'); if (lg) { S.lang = lg.dataset.lang; S.lq = ''; S.langAll = false; return render(); }
+      if (t.closest('[data-lall]')) { S.langAll = true; return render(); }
+      var lu = t.closest('[data-lundo]'); if (lu) { delete (S.i18n[S.lang] || {})[lu.dataset.lundo]; mark(); return render(); }
+    }
+    if (k === 'look') {
+      var ts = t.closest('[data-thset]'); if (ts) { var pr = ts.dataset.thset.split(':'); thset()[pr[0]] = pr[1]; mark(); return render(); }
+      var td = t.closest('[data-thdef]'); if (td) { delete thset()[td.dataset.thdef]; mark(); return render(); }
+      var fx = t.closest('[data-fx]'); if (fx) { var e1 = efset(), key = fx.dataset.fx; if (e1[key]) delete e1[key]; else e1[key] = true; mark(); return render(); }
+      if (t.closest('[data-fxanim]')) { var e2 = efset(); if (e2.animations === false) delete e2.animations; else e2.animations = false; mark(); return render(); }
+      if (t.closest('[data-threset]')) { if (S.armed !== 'thr') { S.armed = 'thr'; return render(); } S.armed = ''; S.theme = null; S.effects = null; mark(); render(); return A.toast('Back to the original look. Publish to update the site.'); }
+    }
+    if (k === 'voice') {
+      var vo = t.closest('[data-von]'); if (vo) { var v1 = vset(); v1[vo.dataset.von] = v1[vo.dataset.von] === false; mark(); return render(); }
+      if (t.closest('[data-vtest]')) return voiceSample();
+      if (t.closest('[data-vreset]')) { if (S.armed !== 'vr') { S.armed = 'vr'; return render(); } S.armed = ''; S.voice = null; mark(); render(); return A.toast('Original voice settings. Publish to update the site.'); }
+    }
+    if (k === 'music') {
+      var mr = t.closest('[data-mi]'), mi = mr ? +mr.dataset.mi : -1, mm = mset();
+      if (t.closest('[data-mon]')) { mm.on = mm.on === false; mark(); return render(); }
+      if (t.closest('[data-mprev]') && mi > -1) {
+        if (S.play === mi) { stopPrev(); }
+        else { stopPrev(); prevAudio = new Audio(src(mm.tracks[mi].url)); S.play = mi; prevAudio.addEventListener('ended', function () { S.play = -1; render(); }); prevAudio.play().catch(function () { S.play = -1; render(); A.toast('This song could not be played here.'); }); }
+        return render();
+      }
+      if (t.closest('[data-mup1]') && mi > 0) { stopPrev(); mm.tracks.splice(mi - 1, 0, mm.tracks.splice(mi, 1)[0]); mark(); return render(); }
+      if (t.closest('[data-mdown]') && mi > -1 && mi < mm.tracks.length - 1) { stopPrev(); mm.tracks.splice(mi + 1, 0, mm.tracks.splice(mi, 1)[0]); mark(); return render(); }
+      if (t.closest('[data-mdel]') && mi > -1) { if (S.armed !== 'm' + mi) { S.armed = 'm' + mi; return render(); } S.armed = ''; stopPrev(); mm.tracks.splice(mi, 1); mark(); render(); return A.toast('Removed. Publish to update the site.'); }
+    }
+    if (k === 'pets') {
+      var po = t.closest('[data-poff]'); if (po) { var P1 = pset(), id = po.dataset.poff, at = P1.off.indexOf(id); if (at < 0) P1.off.push(id); else P1.off.splice(at, 1); mark(); return render(); }
+      if (t.closest('[data-padd]')) return openPetSheet(-1);
+      var pr2 = t.closest('[data-pi]'), pi = pr2 ? +pr2.dataset.pi : -1;
+      if (t.closest('[data-pedit]') && pi > -1) return openPetSheet(pi);
+      if (t.closest('[data-pdel]') && pi > -1) { if (S.armed !== 'pc' + pi) { S.armed = 'pc' + pi; return render(); } S.armed = ''; pset().custom.splice(pi, 1); mark(); render(); return A.toast('Removed. Publish to update the site.'); }
+    }
+    if (k === 'daily') { var dd = t.closest('[data-ddel]'); if (dd) { var n = +dd.dataset.ddel; if (S.armed !== 'd' + n) { S.armed = 'd' + n; return render(); } S.armed = ''; S.daily.splice(n, 1); mark(); render(); } }
+    if (k === 'help') {
+      var h = S.help;
+      if (t.closest('[data-hon]')) { h.on = h.on === false; mark(); return render(); }
+      var np = t.closest('[data-nplus]'); if (np) { var n1 = h.needs[+np.dataset.nplus]; n1.have = (+n1.have || 0) + 1; mark(); return render(); }
+      var nd = t.closest('[data-ndel]'); if (nd) { var n2 = +nd.dataset.ndel; if (S.armed !== 'n' + n2) { S.armed = 'n' + n2; return render(); } S.armed = ''; h.needs.splice(n2, 1); mark(); return render(); }
+      if (t.closest('[data-nadd]')) { h.needs.push({ id: rid(), kind: 'books', title: 'New need', note: '', have: 0, need: 0 }); mark(); return render(); }
+      var sd = t.closest('[data-sdel]'); if (sd) { var n3 = +sd.dataset.sdel; if (S.armed !== 's' + n3) { S.armed = 's' + n3; return render(); } S.armed = ''; h.stories.splice(n3, 1); mark(); return render(); }
+    }
+  });
+  P.addEventListener('input', function (e) {
+    var t = e.target, k = S.tab;
+    if (k === 'status' && t.id === 'avail') { S.avail = t.value; mark(); }
+    if (k === 'words') {
+      if (t.dataset.wf) { wset()[t.dataset.wf] = t.value; mark(); }
+      if (t.dataset.wa !== undefined) { wset().about[+t.dataset.wa] = t.value; mark(); }
+    }
+    if (k === 'collab') {
+      if (t.dataset.cf) { cset()[t.dataset.cf] = t.value; mark(); }
+      if (t.dataset.ciF !== undefined) { var cr = t.closest('[data-ci]'); cset().items[+cr.dataset.ci][t.dataset.ciF] = t.value; mark(); }
+    }
+    if (k === 'lang') {
+      if (t.id === 'langQ') { S.lq = t.value; var pos = t.selectionStart; render(); var q2 = document.getElementById('langQ'); if (q2) { q2.focus(); try { q2.setSelectionRange(pos, pos); } catch (er) { /* ignore */ } } return; }
+      if (t.dataset.lk !== undefined) {
+        var kk = t.dataset.lk, orig = ((B.i18n || {})[S.lang] || {})[kk], o = S.i18n[S.lang] = S.i18n[S.lang] || {};
+        if (t.value.trim() && t.value.trim() !== orig) o[kk] = t.value; else delete o[kk];
+        mark(); var cn2 = document.getElementById('langCount'); if (cn2) cn2.textContent = Object.keys(o).length + ' changed by you';
+      }
+    }
+    if (k === 'look' && t.dataset.th) {
+      var key = t.dataset.th, val = t.type === 'range' ? +t.value : t.value, th = thset();
+      if (key === 'font' || key === 'card') { if (val) th[key] = val; else delete th[key]; } else if (key === 'title') { if (String(val).trim()) th.title = String(val); else delete th.title; } else th[key] = val;
+      var rd = P.querySelector('[data-rd="' + key + '"]'); if (rd) rd.textContent = key === 'radius' ? val + ' px' : key === 'heroDim' ? val + ' %' : val;
+      mark(); thPreview(); return;
+    }
+    if (k === 'look' && t.dataset.fxn !== undefined) { efset().intensity = +t.value; var rd2 = P.querySelector('[data-rd="intensity"]'); if (rd2) rd2.textContent = t.value + ' of 5'; mark(); return; }
+    if (k === 'voice' && t.dataset.vo) {
+      var vk = t.dataset.vo, vs = vset(); vs[vk] = t.type === 'range' ? +t.value : t.value;
+      var rd3 = P.querySelector('[data-rd="' + vk + '"]'); if (rd3) rd3.textContent = (+t.value).toFixed(2); mark(); return;
+    }
+    if (k === 'music') {
+      if (t.dataset.mvol !== undefined) { mset().volume = (+t.value) / 100; var rd4 = P.querySelector('[data-rd="volume"]'); if (rd4) rd4.textContent = t.value + ' %'; mark(); return; }
+      if (t.dataset.mt !== undefined) { var mrw = t.closest('[data-mi]'); mset().tracks[+mrw.dataset.mi].title = t.value; mark(); return; }
+    }
+    if (k === 'daily' && t.dataset.df) { var r = t.closest('[data-i]'); S.daily[+r.dataset.i][t.dataset.df] = t.value; mark(); }
+    if (k === 'help') {
+      if (t.dataset.hf) { S.help[t.dataset.hf] = t.value; mark(); }
+      if (t.dataset.nf) { var r2 = t.closest('[data-ni]'), nn = S.help.needs[+r2.dataset.ni], f = t.dataset.nf; nn[f] = (f === 'have' || f === 'need') ? Math.max(0, Math.floor(+t.value || 0)) : t.value; mark(); }
+    }
+  });
+  P.addEventListener('change', function (e) {
+    var t = e.target;
+    if (S.tab === 'music' && t.dataset.mup !== undefined && t.files && t.files.length) { var fl = Array.prototype.slice.call(t.files); t.value = ''; if (S.busy) return; uploadSongs(fl); }
+  });
+  P.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (e.target.id === 'dForm') {
+      var txt = $('#dText').value.trim(); if (!txt) { A.toast('Write the update first'); return; }
+      S.daily.unshift({ id: rid(), date: $('#dDate').value || today(), text: txt, link: $('#dLink').value.trim() }); mark(); render(); A.toast('Added. Publish to put it on the site.');
+    }
+    if (e.target.id === 'sForm') {
+      var st = $('#sText').value.trim(); if (!st) { A.toast('Write the note first'); return; }
+      S.help.stories.unshift({ id: rid(), date: $('#sDate').value || today(), text: st }); mark(); render(); A.toast('Added. Publish to put it on the site.');
+    }
+  });
+  $('#sheetHost').addEventListener('click', function (e) { if (e.target.id === 'bg') $('#sheetHost').innerHTML = ''; });
+
+  /* ---------- publish ---------- */
+  $('#saveBtn').addEventListener('click', function () {
+    var lists = {};
+    var body = { daily: S.daily, help: S.help, availability: S.avail };
+    Object.keys(LISTS).forEach(function (k) { if (S.lists[k] === null) return; if (LISTS[k].top) body[LISTS[k].top] = S.lists[k]; else lists[k] = S.lists[k]; });
+    body.lists = lists;
+    if (S.words) body.words = S.words;
+    if (S.collab) body.collab = S.collab;
+    if (S.forms) body.forms = S.forms;
+    if (S.theme) body.theme = S.theme;
+    if (S.effects) body.effects = S.effects;
+    if (S.voice) body.voice = S.voice;
+    if (S.music) body.music = S.music;
+    if (S.pets) body.pets = S.pets;
+    if (Object.keys(S.i18n).some(function (l) { return Object.keys(S.i18n[l] || {}).length; }) || S.savedI18n) body.i18n = S.i18n;
+    var b = $('#saveBtn'); b.disabled = true; $('#saveSt').textContent = 'Publishing…';
+    A.put('/api/admin/content', body).then(function (r) {
+      S.dirty = false; $('#saveSt').textContent = A.demo ? 'Saved in this preview only' : 'Published. Visitors see it within a minute.'; A.toast(A.demo ? 'Saved in this preview' : 'Published');
+      var c = r.content || {}; if (c.help) S.help = Object.assign(clone(HELP0), clone(c.help)); if (c.daily) S.daily = c.daily;
+      S.savedI18n = !!c.i18n;
+      S.theme = c.theme ? clone(c.theme) : null; S.effects = c.effects ? clone(c.effects) : null; S.voice = c.voice ? clone(c.voice) : null; S.music = c.music ? clone(c.music) : null; S.pets = c.pets ? clone(c.pets) : null; stopPrev();
+      render();
+    }).catch(function (er) { b.disabled = false; $('#saveSt').textContent = er.message; });
+  });
+  window.addEventListener('beforeunload', function (e) { if (S.dirty) { e.preventDefault(); e.returnValue = ''; } });
+})();
+</script>
+</body>
+</html>
